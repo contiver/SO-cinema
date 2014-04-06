@@ -48,8 +48,6 @@ int main(void){
     string command;
     Client c = NULL;
 
-    initializeTheatres();
-
     while( c == NULL ){
         c = login();
     }
@@ -59,16 +57,6 @@ int main(void){
         if( execCommand(command) ) break;
    }
    return;
-}
-
-void initializeTheatres(void){
-    string seat[STD_SEAT_QTY];
-    int i;
-    for(i = 0; i < STD_SEAT_QTY; i++){
-        seat[i] = NULL;
-    }
-    Theatre t1 = {1, STD_SEAT_QTY, seat};
-    /* TODO use write() syscall to save t1 variable to file */
 }
 
 Client login(void){
@@ -95,7 +83,7 @@ void checkMovies(){
 	ssize_t nread;
 	char buffer[BUF_SIZE];
 
-	if( (fd = open(DATABASE, O_RDONLY | 0644) == -1){
+	if( (fd = open(DATABASE, O_RDONLY | 0644)) == -1){
 		exit(1);		
 	}
 
@@ -110,7 +98,7 @@ void buyTicket(void){
 
 	printf("Insert movie code:");
 	scanf("%s", code);
-    if( (fd = open(FILEPATH, O_RDWR | 0644) == -1 ){
+    if((fd = open(FILEPATH, O_RDWR | 0644)) == -1){
         printf("Invalid movie code: not found in database");
         return;
     }
