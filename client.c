@@ -1,73 +1,35 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include "client.h"
 
-#define DATABASE 
-#define BUF_SIZE 512
-#define FILEPATH 
-#define STD_SEAT_QTY 60
-
-typedef char* string;
-
-string[] seats;
-
-typedef struct{
-    string email;
-    string pw;
-    string name;
-} Client;
-
-typedef struct{
-    int id;
-    string name;
-    string time;
-    Theatre th;
-} Movie;
-
-typedef struct{
-	int number;
-	int size;
-    string seats[];
-} Theatre;
-
-//struct flock {
-//    short l_type; /* Lock type: F_RDLCK, F_WRLCK, F_UNLCK */
-//    short l_whence; /* How to interpret 'l_start': SEEK_SET, SEEK_CUR, SEEK_END */
-//    off_t l_start; /* Offset where the lock begins */
-//    off_t l_len; /* Number of bytes to lock; 0 means "until EOF" */
-//    pid_t l_pid; /* Process preventing our lock (F_GETLK only) */
-//};
-
-struct flock rwlock;
-rwlock.l_type    = F_WRLCK;
-rwlock.l_start   = 0;
-rwlock.l_whence  = SEEK_SET;
-rwlock.l_len     = 0;
-
+Client login(void);
+void buyTicket(void);
 
 int main(void){
     string command;
-    Client c = NULL;
+    //Client c = login();
 
-    while( c == NULL ){
-        c = login();
-    }
-
+    buyTicket();
+/*
     while(true){
         scanf("%s", command);
         if( execCommand(command) ) break;
    }
    return;
+   */
 }
 
 Client login(void){
     string email, pw;
 
     printf("email:");
-    scanf("%s", name);
+    scanf("%s", email);
     printf("\nPassword:");
     scanf("%s", pw);
     /* TODO Check values: if invalid, print error and return NULL */
-    Client c = { email, pw, "DEFAULT_NAME"}
+    Client c = { email, pw, "DEFAULT_NAME"};
     return c;
 }
 
@@ -77,6 +39,8 @@ int execCommand(string command){
     /* TODO Search command and execute it. On success return 0 */
     return 0; 
 } 
+
+/*
     
 void checkMovies(){ 
     int fd;
@@ -88,20 +52,34 @@ void checkMovies(){
 	}
 
 	while((nread = read(fd, buffer, BUF_SIZE)) > 0){
-		/* imprimir en pantallas las peliculas */	
+		// imprimir en pantallas las peliculas 	
 	}
 }
+*/
 
 void buyTicket(void){
-	string code;
-    int fd, error = 0;
+    int movieID, fd, error = 0, seatNumber = -1;
+    char movieName[MAX_NAME_LENGTH];
+
+    Movie test;
 
 	printf("Insert movie code:");
-	scanf("%s", code);
-    if((fd = open(FILEPATH, O_RDWR | 0644)) == -1){
+    scanf("%d", &movieID);
+	sprintf(movieName, "movie_%d", movieID);
+    if((fd = open(movieName, O_RDWR | 0644)) == -1){
         printf("Invalid movie code: not found in database");
         return;
     }
+
+    if( read(fd, &test, sizeof(Movie)) == -1){
+        printf("Error reading from file"); 
+        return;
+    }
+
+    printf("ID=%d, Name = %s", test.id, test.name);
+    return;
+
+    /*
     fcntl(fd, F_SETLK, &rwlock);
 
     if( (error = printSeats(code)) == -1){
@@ -112,8 +90,8 @@ void buyTicket(void){
         return;    
     }
     printf("Insert desired seats");
-    scanf(/* completar */);
-    chooseSeat(); /*recibe los asientos y trata de comprarlos */
+    scanf("%d", seatNumber);
+    chooseSeat(seatNumber); */
 }
 
 void cancelPurchase(){
