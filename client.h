@@ -21,7 +21,7 @@ typedef struct{
 
 typedef struct{
     int number;
-    int size;
+    int seats_left;
     char seats[STD_SEAT_QTY][MAX_LENGTH]; /* emails array */
 } Theatre;
 

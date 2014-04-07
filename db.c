@@ -27,7 +27,7 @@ void initializeMovies(void){
     strncpy(m1.time, "Monday 12:30", MAX_LENGTH);
 
     m1.th.number = 1;
-    m1.th.size = STD_SEAT_QTY;
+    m1.th.seats_left = STD_SEAT_QTY;
     for(i = 0; i < STD_SEAT_QTY; i++){
         strncpy(m1.th.seats[i], "\0", MAX_LENGTH);
     }
