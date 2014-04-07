@@ -66,12 +66,14 @@ void buyTicket(void){
 	printf("Insert movie code:");
     scanf("%d", &movieID);
 	sprintf(movieName, "movie_%d", movieID);
-    if((fd = open(movieName, O_RDWR | 0644)) == -1){
+    FILE *file = fopen(movieName, "rb");
+    if( file == NULL ){
+    //if((fd = open(movieName, O_RDWR | 0644)) == -1){
         printf("Invalid movie code: not found in database");
         return;
     }
 
-    if( read(fd, &test, sizeof(Movie)) == -1){
+    if( fread(&test, sizeof(Movie), 1, file) != 1){
         printf("Error reading from file"); 
         return;
     }

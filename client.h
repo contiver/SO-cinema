@@ -2,6 +2,7 @@
 #define BUF_SIZE 512
 #define STD_SEAT_QTY 60
 #define MAX_NAME_LENGTH 60
+#define MAX_LENGTH 40
 
 /*
 struct flock rwlock;
@@ -13,21 +14,21 @@ rwlock.l_len     = 0;
 typedef char* string;
 
 typedef struct{
-    string email;
-    string pw;
-    string name;
+    char email[MAX_LENGTH];
+    char pw[MAX_LENGTH];
+    char name[MAX_LENGTH];
 } Client;
 
 typedef struct{
     int number;
     int size;
-    string seats[STD_SEAT_QTY];
+    char seats[STD_SEAT_QTY][MAX_LENGTH]; /* emails array */
 } Theatre;
 
 typedef struct{
     int id;
-    string name;
-    string time;
+    char name[MAX_NAME_LENGTH];
+    char time[20];
     Theatre th;
 } Movie;
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -22,29 +23,26 @@ void initializeMovies(void){
 
     Movie m1;
     m1.id = 1;
-    m1.name = "Los aristogatos";
-    m1.time = "Monday 12:30";
+    strncpy(m1.name, "Los aristogatos", MAX_LENGTH);
+    strncpy(m1.time, "Monday 12:30", MAX_LENGTH);
 
     m1.th.number = 1;
     m1.th.size = STD_SEAT_QTY;
-    
     for(i = 0; i < STD_SEAT_QTY; i++){
-        m1.th.seats[i] = NULL;
+        strncpy(m1.th.seats[i], "\0", MAX_LENGTH);
     }
 
     sprintf(movieName, "movie_%d", m1.id);
 
-    if ( (fd = open(movieName, O_RDWR | O_CREAT | O_EXCL, 0644)) == -1){
+    FILE *file = fopen(movieName, "wb");
+    if ( file == NULL ){
         printf("error while creating database\n");
-       // errExit("open");
-       exit(1);
-    }
-
-    if( write(fd, &m1, sizeof(Movie)) == -1){
-        printf("error while writing structure");
         exit(1);
     }
 
-    if(close(fd) == -1) exit(1);//errExit("close");
-    return;
+    if( fwrite(&m1, sizeof(Movie), 1, file) != 1 ){
+        printf("error while writing structure\n");
+        exit(1);
+    }
+    fclose(file);
 }
