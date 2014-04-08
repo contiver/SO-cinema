@@ -19,7 +19,7 @@ int main(void){
     //Client c = login();
     printf("\nWelcome to MovieLand :)\n");
     printf("\nPlease type the desired option:\n");
-    printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+    printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n");
     scanf("%s",command);
     execute_command(command);
     //buy_ticket();
