@@ -7,11 +7,10 @@
 //lock de write, nadie lo puede ni leer ni escribir   
 //lock de read, lo pueden leer pero no lo pueden escribir   
 
-MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
+Movie buy_ticket(char movieName[MAX_NAME_LENGTH]){
     int fd, error = 0, seatNumber = -1;
-    int ans=0;
     Movie requested_movie;
-    MovieFile mf;    
+    int ans=0;
 
     FILE * file = fopen(movieName, "rb+");
     if( file == NULL ){
@@ -32,10 +31,8 @@ MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
         printf("Error reading from file\n"); 
         return;
     }
-    
-    mf.movie=requested_movie;
-    mf.fd=fd;
-    return mf;
+
+    return requested_movie;
 
     //unlockFile(fd);
 }
