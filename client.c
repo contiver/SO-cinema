@@ -6,30 +6,64 @@
 #include "client.h"
 #include "fileLockImpl.h"
 
+#define COMMAND_SIZE 20
+
 Client login(void);
-void buyTicket(void);
-int unlockFile(int fd);
-int wrlockFile(int fd);
-int rdlockFile(int fd);
+void buy_ticket(void);
+void initialize_rwflock(struct flock * rwlock);
+void finish_rwlock(struct flock * rwlock);
+void execute_command(char * command);
+int check_command(char * com);
+
+string commands[] = { "ListMovies", "BuyMovie", "ChooseSeat",
+                      "CancelMovie", "Exit" };
 
 int main(void){
-    string command;
-   // Client c = login();
-
-    buyTicket();
-/*
-    while(true){
-        scanf("%s", command);
-        if( execCommand(command) ) break;
-   }
-   return;
-   */
+    char command[20] = "";
+    //Client c = login();
+    printf("\nWelcome to MovieLand :)\n");
+    Client c = login();
+    printf("\nPlease type the desired option:\n");
+    printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+    scanf("%s",command);
+    execute_command(command);
 }
+
+void execute_command(char * command){
+    int ans=check_command(command);
+    if(ans==-1){
+        printf("Invalid command\n");
+    }
+    else{
+        switch(ans){
+            case 0:
+                    //list_movies(); break;
+            case 1:
+                    buy_ticket(); break;
+            case 2:
+                   // choose_seat(); break;
+            case 3:
+                   // cancel_ticket(); break;
+            case 4:
+                    exit(1);
+        }
+    }
+}
+
+int check_command(char * com){
+    int i;
+    for(i=0;i<COMMAND_SIZE;i++){
+        if(strcmp(commands[i],com)==0){
+            return i;
+        }
+    }
+    return -1;
+}
+
 
 Client login(void){
     char email[MAX_LENGTH],
          pw[MAX_LENGTH];
-
     printf("email:");
     scanf("%s", email);
     printf("\nPassword:");
@@ -42,12 +76,6 @@ Client login(void){
     return c;
 }
 
-int execCommand(string command){
-    if( !strcmp("exit", command) || !strcmp("quit", command) ) return 1; 
-
-    /* TODO Search command and execute it. On success return 0 */
-    return 0; 
-} 
 
 /*
     
@@ -84,6 +112,7 @@ void buy_ticket(void){
     
     //lock de la movie para que nadie mas pueda leerla
     //ni escribirla
+
     if(wrlockFile(fd) == -1){
         printf("error fcntl\n");
         return;
@@ -102,7 +131,7 @@ void buy_ticket(void){
         //modificar la peli
         printf("modificando la peli\n");
         printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
-        sleep(20);
+        //sleep(20);
     }   
     //unlockear la peli
     unlockFile(fd);
