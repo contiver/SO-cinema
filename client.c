@@ -6,6 +6,8 @@
 
 Client login(void);
 void buyTicket(void);
+void initialize_rwflock(struct flock * rwlock);
+void finish_rwlock(struct flock * rwlock);
 
 int main(void){
     string command;
@@ -21,17 +23,17 @@ int main(void){
    */
 }
 
-Client login(void){
-    string email, pw;
+//Client login(void){
+  //  string email, pw;
 
-    printf("email:");
-    scanf("%s", email);
-    printf("\nPassword:");
-    scanf("%s", pw);
+//    printf("email:");
+ //   scanf("%s", email);
+  //  printf("\nPassword:");
+   // scanf("%s", pw);
     /* TODO Check values: if invalid, print error and return NULL */
-    Client c = { email, pw, "DEFAULT_NAME"};
-    return c;
-}
+   // Client c = { email, pw, "DEFAULT_NAME"};
+    //return c;
+//}
 
 int execCommand(string command){
     if( !strcmp("exit", command) || !strcmp("quit", command) ) return 1; 
@@ -60,29 +62,53 @@ void checkMovies(){
 void buyTicket(void){
     int movieID, fd, error = 0, seatNumber = -1;
     char movieName[MAX_NAME_LENGTH];
+    Movie requested_movie;
+    struct flock rwlock;
+    
+    initialize_rwflock(&rwlock);
 
-    Movie test;
-
-	printf("Insert movie code:");
+	printf("Insert movie code:\n");
     scanf("%d", &movieID);
 	sprintf(movieName, "movie_%d", movieID);
-    FILE *file = fopen(movieName, "rb");
+  
+    FILE * file = fopen(movieName, "rb+");
     if( file == NULL ){
-    //if((fd = open(movieName, O_RDWR | 0644)) == -1){
-        printf("Invalid movie code: not found in database");
+        printf("Invalid movie code: not found in database\n");
+        return;
+    }
+    fd= fileno(file);
+    
+    //lock de la movie para que nadie mas pueda leerla
+    //ni escribirla
+    if(fcntl(fd,F_SETLKW, &rwlock)==-1){
+        printf("error fcntl\n");
+    }
+
+    if( fread(&requested_movie, sizeof(Movie), 1, file) != 1){
+        printf("Error reading from file\n"); 
         return;
     }
 
-    if( fread(&test, sizeof(Movie), 1, file) != 1){
-        printf("Error reading from file"); 
-        return;
+    //checkear si esta llena
+    if(requested_movie.th.seats_left ==0){
+        printf("Sorry, this movie is full\n");
     }
+    else{
+        //modificar la peli
+        printf("modificando la peli\n");
+        printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
+        sleep(20);
+    }   
+    //unlockear la peli
+    finish_rwlock(&rwlock);
+    fcntl(fd,F_SETLKW,&rwlock);    
 
-    printf("ID=%d, Name = %s", test.id, test.name);
+   // printf("ID=%d, Name = %s", requested_movie.id, requested_movie.name);
     return;
 
-    /*
-    fcntl(fd, F_SETLK, &rwlock);
+    /* F_SETLKW lockea, o unlockea, si ya esta lockeado espera.
+    struct flock rwlock;
+    fcntl(file, F_SETLKW, &rwlock);
 
     if( (error = printSeats(code)) == -1){
         printf("Invalid code");
@@ -94,6 +120,19 @@ void buyTicket(void){
     printf("Insert desired seats");
     scanf("%d", seatNumber);
     chooseSeat(seatNumber); */
+}
+
+void initialize_rwflock(struct flock * rwlock){
+    //lock de write, nadie lo puede ni leer ni escribir   
+    //lock de read, lo pueden leer pero no lo pueden escribir   
+    rwlock->l_type    = F_WRLCK; 
+    rwlock->l_start   = 0;
+    rwlock->l_whence  = SEEK_SET;
+    rwlock->l_len     = 0;
+}
+
+void finish_rwlock(struct flock * rwlock){
+    rwlock->l_type    = F_UNLCK; 
 }
 
 void cancelPurchase(){

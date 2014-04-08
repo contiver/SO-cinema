@@ -18,15 +18,16 @@ int main(void){
 }
 
 void initializeMovies(void){
-    int i, j, fd;
+    int i, j;
     char movieName[40];
     Movie movie[10];
     string titles[] = {"Los aristogatos", "n2", "n3", "n10",
                        "n4", "n5", "n6",
                        "n7", "n8", "n9"}; 
-    string times[] = {"Monday 13:00", "Monday 15:00", "Monday 16:45", "Monday 19:00",
-                      "Monday 22:00", "Tuesday 0:30", "Tuesday 12:00", "Tuesday 14:30",
-                      "Tuesday 17:00", "Tuesday 19:30"};
+    string times[] = {"Monday 13:00", "Monday 15:00", "Monday 16:45", 
+                      "Monday 19:00", "Monday 22:00", "Tuesday 0:30",
+                      "Tuesday 12:00", "Tuesday 14:30","Tuesday 17:00",
+                      "Tuesday 19:30"};
 
     for(i = 0; i < 10; i++){
         printf("%d\n", i);
