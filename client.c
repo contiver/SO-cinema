@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include "client.h"
+#include "fileLockImpl.h"
+
 #define COMMAND_SIZE 20
 
 Client login(void);
@@ -13,21 +15,25 @@ void finish_rwlock(struct flock * rwlock);
 void execute_command(char * command);
 int check_command(char * com);
 void printSeats(char seats[][MAX_LENGTH]);
+void list_movies(void);
 
-char * commands[]={"ListMovies","BuyMovie", "ChooseSeat", "CancelMovie", "Exit"};
+string commands[] = { "ListMovies", "BuyMovie", "ChooseSeat",
+                      "CancelMovie", "Exit" };
 
 int main(void){
 
     char command[20]="";
     printf("\nWelcome to RetroMovies :)\n");
    // Client c = login();
-   // printf("\nPlease type the desired option:\n");
-    //printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
-   // scanf("%s",command);
-   // execute_command(command);
-    buy_ticket();
+    while(true){
+        printf("\nPlease type the desired option:\n");  
+        printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+        scanf("%s",command);
+        execute_command(command);
+    //buy_ticket();
+   // list_movies();
+    }
 }
-
 
 void execute_command(char * command){
     int ans=check_command(command);
@@ -37,7 +43,7 @@ void execute_command(char * command){
     else{
         switch(ans){
             case 0:
-                    //list_movies(); break;
+                    list_movies(); break;
             case 1:
                     buy_ticket(); break;
             case 2:
@@ -49,17 +55,32 @@ void execute_command(char * command){
         }
     }
 }
-/*
-void list_movies(){
+
+void list_movies(void){
  
-    char movieName[MAX_NAME_LENGTH];
-  
-    FILE * file = fopen(movieName, "rb+");
+    char movies[10][60];
+    int i=0;
+    FILE * file = fopen("movie_list", "rb");
     if( file == NULL ){
         printf("Invalid movie code: not found in database\n");
         return;
     }
-}*/
+    if( fread(&movies, sizeof(movies), 1, file) != 1){
+        printf("Error reading from file\n"); 
+        return;
+    }
+    for(i=0; i<60; i++){
+        printf("-");
+    }
+    printf("\n");
+    for(i=0; i<10; i++){
+        printf("%s\n",movies[i]);
+    }
+    for(i=0; i<60; i++){
+        printf("-");
+    }
+    printf("\n");
+}
 
 int check_command(char * com){
     int i;
@@ -105,72 +126,11 @@ void checkMovies(){
 }
 */
 
-void buy_ticket(void){
-    int movieID, fd, error = 0, seatNumber = -1;
-    char movieName[MAX_NAME_LENGTH];
-    Movie requested_movie;
-    
-	printf("Insert movie code:\n");
-    scanf("%d", &movieID);
-	sprintf(movieName, "movie_%d", movieID);
-  
-    FILE * file = fopen(movieName, "rb+");
-    if( file == NULL ){
-        printf("Invalid movie code: not found in database\n");
-        return;
-    }
-    fd= fileno(file);
-    
-    //lock de la movie para que nadie mas pueda leerla
-    //ni escribirla
-
-    if(wrlockFile(fd) == -1){
-        printf("error fcntl\n");
-        return;
-    }
-
-    if( fread(&requested_movie, sizeof(Movie), 1, file) != 1){
-        printf("Error reading from file\n"); 
-        return;
-    }
-
-    //checkear si esta llena
-    if(requested_movie.th.seats_left ==0){
-        printf("Sorry, this movie is full\n");
-    }
-    else{
-        //modificar la peli
-        printf("modificando la peli\n");
-        printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
-        printSeats(requested_movie.th.seats);
-        sleep(20);
-    }   
-    //unlockear la peli
-    unlockFile(fd);
-
-   // printf("ID=%d, Name = %s", requested_movie.id, requested_movie.name);
-    return;
-
-    /* F_SETLKW lockea, o unlockea, si ya esta lockeado espera.
-    struct flock rwlock;
-    fcntl(file, F_SETLKW, &rwlock);
-
-    if( (error = printSeats(code)) == -1){
-        printf("Invalid code");
-        return;    
-    }else if(error == -2){
-        printf("Sorry, Theatre is full");
-        return;    
-    }
-    printf("Insert desired seats");
-    scanf("%d", seatNumber);
-    chooseSeat(seatNumber); */
-}
-
 void cancelPurchase(){
     /* TODO */
     return;
 }
+
 
 
 void printSeats(char seats[][MAX_LENGTH]){
@@ -185,24 +145,4 @@ void printSeats(char seats[][MAX_LENGTH]){
         }
         printf("\n");
    } 
-}
-
-//lock de write, nadie lo puede ni leer ni escribir   
-//lock de read, lo pueden leer pero no lo pueden escribir   
-int rdlockFile(int fd){
-    struct flock fl = {.l_type = F_RDLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int wrlockFile(int fd){
-    struct flock fl = {.l_type = F_WRLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int unlockFile(int fd){
-    struct flock fl = {.l_type = F_UNLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
 }
