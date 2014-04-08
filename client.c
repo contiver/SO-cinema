@@ -4,15 +4,17 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include "client.h"
+#include "fileLockImpl.h"
 
 Client login(void);
 void buyTicket(void);
-void initialize_rwflock(struct flock * rwlock);
-void finish_rwlock(struct flock * rwlock);
+int unlockFile(int fd);
+int wrlockFile(int fd);
+int rdlockFile(int fd);
 
 int main(void){
     string command;
-    Client c = login();
+   // Client c = login();
 
     buyTicket();
 /*
@@ -64,14 +66,14 @@ void checkMovies(){
 }
 */
 
-void buyTicket(void){
+void buy_ticket(void){
     int movieID, fd, error = 0, seatNumber = -1;
     char movieName[MAX_NAME_LENGTH];
     Movie requested_movie;
     
-	printf("Insert movie code:\n");
+    printf("Insert movie code:\n");
     scanf("%d", &movieID);
-	sprintf(movieName, "movie_%d", movieID);
+    sprintf(movieName, "movie_%d", movieID);
   
     FILE * file = fopen(movieName, "rb+");
     if( file == NULL ){
@@ -141,24 +143,4 @@ void printSeats(char seats[][MAX_LENGTH], int seatsAmount){
         }
         printf("\n");
    } 
-}
-
-//lock de write, nadie lo puede ni leer ni escribir   
-//lock de read, lo pueden leer pero no lo pueden escribir   
-int rdlockFile(int fd){
-    struct flock fl = {.l_type = F_RDLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int wrlockFile(int fd){
-    struct flock fl = {.l_type = F_WRLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int unlockFile(int fd){
-    struct flock fl = {.l_type = F_UNLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
 }
