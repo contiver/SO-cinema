@@ -34,8 +34,7 @@ void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
             printf("error while creating movie_list file\n");
             exit(1);
      }
-     int i=0;
-    // for(i=0; i<10;i++){
+    // for(int i=0; i<10;i++){
       //      movies[i]=titles[i]times[i];
      //}        
 

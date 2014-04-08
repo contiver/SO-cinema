@@ -12,35 +12,23 @@ void initialize_rwflock(struct flock * rwlock);
 void finish_rwlock(struct flock * rwlock);
 void execute_command(char * command);
 int check_command(char * com);
+void printSeats(char seats[][MAX_LENGTH]);
 
 char * commands[]={"ListMovies","BuyMovie", "ChooseSeat", "CancelMovie", "Exit"};
 
 int main(void){
-<<<<<<< HEAD
-    char command[20]="";
-    //Client c = login();
-    printf("\nWelcome to MovieLand :)\n");
-    printf("\nPlease type the desired option:\n");
-    printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
-    scanf("%s",command);
-    execute_command(command);
-    //buy_ticket();
-=======
-    string command;
-    Client c = login();
 
-    buyTicket();
->>>>>>> 3089b4eb143aa5cc0585156cd3969ba5cd112708
-/*
-    while(true){
-        scanf("%s", command);
-        if( execCommand(command) ) break;
-   }
-   return;
-   */
+    char command[20]="";
+    printf("\nWelcome to RetroMovies :)\n");
+   // Client c = login();
+   // printf("\nPlease type the desired option:\n");
+    //printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+   // scanf("%s",command);
+   // execute_command(command);
+    buy_ticket();
 }
 
-<<<<<<< HEAD
+
 void execute_command(char * command){
     int ans=check_command(command);
     if(ans==-1){
@@ -72,17 +60,13 @@ int check_command(char * com){
     return -1;
 }
 
-//Client login(void){
-  //  string email, pw;
-=======
+
 Client login(void){
     char email[MAX_LENGTH],
          pw[MAX_LENGTH];
->>>>>>> 3089b4eb143aa5cc0585156cd3969ba5cd112708
-
-    printf("email:");
+    printf("Log In:\nEmail:\n");
     scanf("%s", email);
-    printf("\nPassword:");
+    printf("Password:\n");
     scanf("%s", pw);
     /* TODO Check values: if invalid, print error and return NULL */
     Client c;
@@ -92,11 +76,6 @@ Client login(void){
     return c;
 }
 
-//int execCommand(string command){
- //   if( !strcmp("exit", command) || !strcmp("quit", command) ) return 1; 
-    /* TODO Search command and execute it. On success return 0 */
- //   return 0; 
-//} 
 
 /*
     
@@ -133,14 +112,10 @@ void buy_ticket(void){
     
     //lock de la movie para que nadie mas pueda leerla
     //ni escribirla
-<<<<<<< HEAD
-    if(fcntl(fd,F_SETLKW, &rwlock)==-1){
-        printf("Error locking file with fcntl\n");
-=======
+
     if(wrlockFile(fd) == -1){
         printf("error fcntl\n");
         return;
->>>>>>> 3089b4eb143aa5cc0585156cd3969ba5cd112708
     }
 
     if( fread(&requested_movie, sizeof(Movie), 1, file) != 1){
@@ -156,7 +131,8 @@ void buy_ticket(void){
         //modificar la peli
         printf("modificando la peli\n");
         printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
-        //sleep(20);
+        printSeats(requested_movie.th.seats);
+        sleep(20);
     }   
     //unlockear la peli
     unlockFile(fd);
@@ -185,27 +161,13 @@ void cancelPurchase(){
     return;
 }
 
-<<<<<<< HEAD
-//void printSeats(char seats[][], int seatsAmount){
- //   int rows, cols, seatNumber;
-  //  for(rows = 0; rows < 6; rows++){
-   //     for(cols = 0; cols < 10; cols++){
-    //        if(seats[seatNumber = rows*10 + cols] == NULL){
-     //           printf("%.4d", seatNumber);
-      //      }else{
-       //         printf("%.4s", "X");
-        //    }
-        //}
-        //printf("\n");
-   //} 
-//}
-=======
-void printSeats(char seats[][MAX_LENGTH], int seatsAmount){
+
+void printSeats(char seats[][MAX_LENGTH]){
     int rows, cols, seatNumber;
     for(rows = 0; rows < 6; rows++){
         for(cols = 0; cols < 10; cols++){
-            if(seats[seatNumber = rows*10 + cols] == NULL){
-                printf("%.4d", seatNumber);
+            if(strcmp(seats[seatNumber = rows*10 + cols],"")==0){
+                printf("%4d", seatNumber+1);
             }else{
                 printf("%.4s", "X");
             }
@@ -233,4 +195,3 @@ int unlockFile(int fd){
                        .l_whence = SEEK_SET, .l_len = 0};
     return fcntl(fd, F_SETLKW, &fl);
 }
->>>>>>> 3089b4eb143aa5cc0585156cd3969ba5cd112708

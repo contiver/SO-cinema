@@ -12,20 +12,20 @@ void initialize_rwflock(struct flock * rwlock);
 void finish_rwlock(struct flock * rwlock);
 void execute_command(char * command);
 int check_command(char * com);
+void printSeats(char seats[][MAX_LENGTH]);
 
 char * commands[]={"ListMovies","BuyMovie", "ChooseSeat", "CancelMovie", "Exit"};
 
 int main(void){
 
     char command[20]="";
-    //Client c = login();
-    printf("\nWelcome to MovieLand :)\n");
-    Client c = login();
-    printf("\nPlease type the desired option:\n");
-    printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
-    scanf("%s",command);
-    execute_command(command);
-
+    printf("\nWelcome to RetroMovies :)\n");
+   // Client c = login();
+   // printf("\nPlease type the desired option:\n");
+    //printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+   // scanf("%s",command);
+   // execute_command(command);
+    buy_ticket();
 }
 
 
@@ -49,6 +49,17 @@ void execute_command(char * command){
         }
     }
 }
+/*
+void list_movies(){
+ 
+    char movieName[MAX_NAME_LENGTH];
+  
+    FILE * file = fopen(movieName, "rb+");
+    if( file == NULL ){
+        printf("Invalid movie code: not found in database\n");
+        return;
+    }
+}*/
 
 int check_command(char * com){
     int i;
@@ -64,9 +75,9 @@ int check_command(char * com){
 Client login(void){
     char email[MAX_LENGTH],
          pw[MAX_LENGTH];
-    printf("email:");
+    printf("Log In:\nEmail:\n");
     scanf("%s", email);
-    printf("\nPassword:");
+    printf("Password:\n");
     scanf("%s", pw);
     /* TODO Check values: if invalid, print error and return NULL */
     Client c;
@@ -131,7 +142,8 @@ void buy_ticket(void){
         //modificar la peli
         printf("modificando la peli\n");
         printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
-        //sleep(20);
+        printSeats(requested_movie.th.seats);
+        sleep(20);
     }   
     //unlockear la peli
     unlockFile(fd);
@@ -161,12 +173,12 @@ void cancelPurchase(){
 }
 
 
-void printSeats(char seats[][MAX_LENGTH], int seatsAmount){
+void printSeats(char seats[][MAX_LENGTH]){
     int rows, cols, seatNumber;
     for(rows = 0; rows < 6; rows++){
         for(cols = 0; cols < 10; cols++){
-            if(seats[seatNumber = rows*10 + cols] == NULL){
-                printf("%.4d", seatNumber);
+            if(strcmp(seats[seatNumber = rows*10 + cols],"")==0){
+                printf("%4d", seatNumber+1);
             }else{
                 printf("%.4s", "X");
             }
