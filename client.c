@@ -100,3 +100,17 @@ void cancelPurchase(){
     /* TODO */
     return;
 }
+
+void printSeats(char seats[][], int seatsAmount){
+    int rows, cols, seatNumber;
+    for(rows = 0; rows < 6; rows++){
+        for(cols = 0; cols < 10; cols++){
+            if(seats[seatNumber = rows*10 + cols] == NULL){
+                printf("%.4d", seatNumber);
+            }else{
+                printf("%.4s", "X");
+            }
+        }
+        printf("\n");
+   } 
+}

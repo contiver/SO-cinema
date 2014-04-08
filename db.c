@@ -18,31 +18,39 @@ int main(void){
 }
 
 void initializeMovies(void){
-    int i, fd;
+    int i, j, fd;
     char movieName[40];
+    Movie movie[10];
+    string titles[] = {"Los aristogatos", "n2", "n3", "n10",
+                       "n4", "n5", "n6",
+                       "n7", "n8", "n9"}; 
+    string times[] = {"Monday 13:00", "Monday 15:00", "Monday 16:45", "Monday 19:00",
+                      "Monday 22:00", "Tuesday 0:30", "Tuesday 12:00", "Tuesday 14:30",
+                      "Tuesday 17:00", "Tuesday 19:30"};
 
-    Movie m1;
-    m1.id = 1;
-    strncpy(m1.name, "Los aristogatos", MAX_LENGTH);
-    strncpy(m1.time, "Monday 12:30", MAX_LENGTH);
+    for(i = 0; i < 10; i++){
+        printf("%d\n", i);
+        movie[i].id = i+1;
+        strncpy(movie[i].name, titles[i], MAX_LENGTH); 
+        strncpy(movie[i].time, times[i], MAX_LENGTH);
+        movie[i].th.number = 1;
+        movie[i].th.seats_left = STD_SEAT_QTY;
+        for(j = 0; j < STD_SEAT_QTY; j++){
+            strncpy((movie[i].th.seats)[j], "\0", MAX_LENGTH);
+        }
 
-    m1.th.number = 1;
-    m1.th.size = STD_SEAT_QTY;
-    for(i = 0; i < STD_SEAT_QTY; i++){
-        strncpy(m1.th.seats[i], "\0", MAX_LENGTH);
+        sprintf(movieName, "movie_%d", movie[i].id);
+        FILE *file = fopen(movieName, "wb");
+        if ( file == NULL ){
+            printf("error while creating movie_%d file\n", i);
+            exit(1);
+        }
+        if( fwrite(&movie[i], sizeof(Movie), 1, file) != 1 ){
+            printf("error while writing movie_%d structure\n", i);
+            exit(1);
+        }
+        fclose(file);
     }
-
-    sprintf(movieName, "movie_%d", m1.id);
-
-    FILE *file = fopen(movieName, "wb");
-    if ( file == NULL ){
-        printf("error while creating database\n");
-        exit(1);
-    }
-
-    if( fwrite(&m1, sizeof(Movie), 1, file) != 1 ){
-        printf("error while writing structure\n");
-        exit(1);
-    }
-    fclose(file);
 }
+
+
