@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "client.h"
+#include "../include/client.h"
 
 #define STD_SEAT_QTY 60
 

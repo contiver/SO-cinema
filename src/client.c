@@ -3,15 +3,14 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdbool.h>
-#include "client.h"
-#include "fileLockImpl.h"
+#include "../include/client.h"
+#include "../include/fileLockImpl.h"
 
 #define COMMAND_SIZE 20
 
 Client login(void);
 void buy_ticket(void);
 void initialize_rwflock(struct flock * rwlock);
-void finish_rwlock(struct flock * rwlock);
 void execute_command(char * command);
 int check_command(char * com);
 

@@ -1,7 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
-#include "fileLockImpl.h"
-#include "client.h"
+#include "../include/fileLockImpl.h"
+#include "../include/client.h"
 
 
 //lock de write, nadie lo puede ni leer ni escribir   
