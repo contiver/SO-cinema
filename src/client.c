@@ -26,7 +26,7 @@ int main(void){
     Client c = login();
     while(true){
         printf("\nPlease type the desired option:\n");  
-        printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
+        printf("ListMovies\nBuyMovie\nCancelMovie\nExit\n\n");
         scanf("%s",command);
         execute_command(command, c);
     }
@@ -52,33 +52,46 @@ void execute_command(char *command, Client c){
 }
 
 void buy_movie(Client c){
-    int movieID;
+    int movieID, seat, aux=-1;
     char movieName[MAX_NAME_LENGTH];
-    int seat;
     printf("Insert movie code:\n");
     scanf("%d", &movieID);
-    sprintf(movieName, "movie_%d", movieID);
+    
+    sprintf(movieName, "./src/database/movie_%d", movieID);
 
     MovieFile movie_file = buy_ticket(movieName);
     if(movie_file.movie.th.seats_left==0){
          printf("Sorry, this movie is full\n");
-         //llamar a unlock
+         //sale y va a unlock
+            //falta ver donde cerrar el archivo
     }
     else{
-        printf("Please choose a seat\n");
-        printSeats(movie_file.movie.th.seats);
-        scanf("%d",&seat);
+        while(aux!=0){
+            printf("Please choose a seat\n");
+            printf("%s %s\n",movie_file.movie.name, movie_file.movie.time);
+            printSeats(movie_file.movie.th.seats);
+            scanf("%d",&seat);
+            aux=buy_seat(seat,c,movie_file);
+            if(aux==-1){
+                printf("Sorry, that seat is taken\n");
+            }
+            else if(aux==-2){
+                printf("Invalid number of seat\n");
+            }
+            //si devuelve 0 es que ya reservo ese asiento
+        }
+        printf("The purchase has been successful\n");
     }
     //al terminar unlockear en el back
     unlockFile(movie_file.fd);
 }
 void list_movies(void){
- 
+    int code=1;
     char movies[10][60];
     int i=0;
-    FILE * file = fopen("movie_list", "rb");
+    FILE * file = fopen("./src/database/movie_list", "rb");
     if( file == NULL ){
-        printf("Invalid movie code: not found in database\n");
+        printf("ListMovies file not found in database\n");
         return;
     }
     if( fread(&movies, sizeof(movies), 1, file) != 1){
@@ -90,7 +103,7 @@ void list_movies(void){
     }
     printf("\n");
     for(i=0; i<10; i++){
-        printf("%s\n",movies[i]);
+        printf("%s\t\tCode:%d\n",movies[i],code++);
     }
     for(i=0; i<60; i++){
         printf("-");

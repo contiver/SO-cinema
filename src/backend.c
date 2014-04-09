@@ -10,15 +10,14 @@ int wrlockFile(int fd);
 int rdlockFile(int fd);
 
 MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
-    int fd, error = 0, seatNumber = -1;
-    int ans = 0;
+    int fd;
     Movie requested_movie;
     MovieFile mf;    
 
     FILE *file = fopen(movieName, "rb+");
     if( file == NULL ){
         printf("Invalid movie code: not found in database\n");
-        return;
+        exit(1);
     }
     fd = fileno(file);
     
@@ -26,13 +25,13 @@ MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
     //ni escribirla
 
     if(wrlockFile(fd) == -1){
-        printf("error fcntl\n");
-        return;
+        printf("Error locking file\n");
+        exit(1);
     }
 
     if(fread(&requested_movie, sizeof(Movie), 1, file) != 1){
         printf("Error reading from file\n"); 
-        return;
+        exit(1);
     }
     
     mf.movie=requested_movie;
@@ -61,4 +60,44 @@ int unlockFile(int fd){
     struct flock fl = {.l_type = F_UNLCK, .l_start = 0,
                        .l_whence = SEEK_SET, .l_len = 0};
     return fcntl(fd, F_SETLKW, &fl);
+}
+
+int buy_seat(int seat, Client c, MovieFile mf){
+    char movieName[40];
+    int i=0;
+    if(seat>60 || seat<1){
+        return -2;
+    }
+    if(strcmp(mf.movie.th.seats[seat-1],"")!=0){
+        return -1; //ese asiento esta ocupado
+    }
+    strncpy(mf.movie.th.seats[seat-1],c.email,MAX_LENGTH);
+
+    Theatre newth;
+    newth.number= mf.movie.th.number;
+    newth.seats_left= (mf.movie.th.seats_left)-1;
+    for(i=0;i<STD_SEAT_QTY;i++){
+        strncpy(newth.seats[i],mf.movie.th.seats[i],MAX_LENGTH);
+    }
+                    
+    Movie newmovie;
+    newmovie.id= mf.movie.id;
+    strncpy(newmovie.name, mf.movie.name,MAX_NAME_LENGTH);
+    strncpy(newmovie.time, mf.movie.time,20);
+    newmovie.th= newth;
+
+    sprintf(movieName, "./src/database/movie_%d", mf.movie.id); 
+   
+    //lo abre y lo trunca a long 0   
+    FILE *file = fopen(movieName, "wb");
+    if ( file == NULL ){
+        printf("error while creating movie_%d file\n", mf.movie.id);
+        exit(1);
+    }
+    if( fwrite(&newmovie, sizeof(Movie), 1, file) != 1 ){
+            printf("error while writing movie_%d structure\n",mf.movie.id);
+            exit(1);
+    }
+    fclose(file);
+    return 0; //reserva ok
 }

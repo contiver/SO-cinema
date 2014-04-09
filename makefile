@@ -6,7 +6,7 @@ VPATH = src:include
 default: client
 
 client: client.o backend.o
-	$(CC) $(CFLAGS) -o client src/client.o src/backend.o 
+	$(CC) $(CFLAGS) -o client client.o backend.o 
 
 src/client.o: client.c client.h backend.h
 	$(CC) $(CFLAGS) -c src/client.c src/backend.c

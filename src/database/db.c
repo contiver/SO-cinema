@@ -26,7 +26,7 @@ int main(void){
 }
 
 void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
-     int i;
+     int i, code=1;
      char movies[MOVIES_QTY][60];   
      FILE *file = fopen("movie_list", "wb");
      if ( file == NULL ){
