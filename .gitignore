@@ -1,0 +1,12 @@
+*~
+*.o
+.__*
+
+#Executables
+*.out
+client
+db
+
+#Movie files
+movie_*
+

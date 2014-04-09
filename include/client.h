@@ -28,4 +28,9 @@ typedef struct{
     Theatre th;
 } Movie;
 
+typedef struct{
+    Movie movie;
+    int fd;
+}MovieFile;
+
 #endif

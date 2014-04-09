@@ -7,15 +7,12 @@
 //lock de write, nadie lo puede ni leer ni escribir   
 //lock de read, lo pueden leer pero no lo pueden escribir   
 
-void buy_ticket(void){
-    int movieID, fd, error = 0, seatNumber = -1;
-    char movieName[MAX_NAME_LENGTH];
+MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
+    int fd, error = 0, seatNumber = -1;
+    int ans=0;
     Movie requested_movie;
-    
-    printf("Insert movie code:\n");
-    scanf("%d", &movieID);
-    sprintf(movieName, "movie_%d", movieID);
-  
+    MovieFile mf;    
+
     FILE * file = fopen(movieName, "rb+");
     if( file == NULL ){
         printf("Invalid movie code: not found in database\n");
@@ -35,37 +32,12 @@ void buy_ticket(void){
         printf("Error reading from file\n"); 
         return;
     }
+    
+    mf.movie=requested_movie;
+    mf.fd=fd;
+    return mf;
 
-    //checkear si esta llena
-    if(requested_movie.th.seats_left ==0){
-        printf("Sorry, this movie is full\n");
-    }
-    else{
-        //modificar la peli
-        printf("modificando la peli\n");
-        printf("ID=%d, Name = %s\n", requested_movie.id, requested_movie.name);
-        //sleep(20);
-    }   
-    //unlockear la peli
-    unlockFile(fd);
-
-   // printf("ID=%d, Name = %s", requested_movie.id, requested_movie.name);
-    return;
-
-    /* F_SETLKW lockea, o unlockea, si ya esta lockeado espera.
-    struct flock rwlock;
-    fcntl(file, F_SETLKW, &rwlock);
-
-    if( (error = printSeats(code)) == -1){
-        printf("Invalid code");
-        return;    
-    }else if(error == -2){
-        printf("Sorry, Theatre is full");
-        return;    
-    }
-    printf("Insert desired seats");
-    scanf("%d", seatNumber);
-    chooseSeat(seatNumber); */
+    //unlockFile(fd);
 }
 
 int rdlockFile(int fd){
