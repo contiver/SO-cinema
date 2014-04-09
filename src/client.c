@@ -4,13 +4,15 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include "../include/client.h"
-#include "../include/fileLockImpl.h"
+#include "../include/backend.h"
 
 #define COMMAND_SIZE 4
+#define ROWS 6
+#define COLS 10
 
 Client login(void);
 void buy_movie(Client c);
-void execute_command(char * command);
+void execute_command(char *command, Client c);
 int check_command(char * com);
 void printSeats(char seats[][MAX_LENGTH]);
 void list_movies(void);
@@ -26,11 +28,11 @@ int main(void){
         printf("\nPlease type the desired option:\n");  
         printf("ListMovies\nBuyMovie\nChooseSeat\nCancelMovie\nExit\n\n");
         scanf("%s",command);
-        execute_command(command,c);
+        execute_command(command, c);
     }
 }
 
-void execute_command(char * command, Client c){
+void execute_command(char *command, Client c){
     int ans=check_command(command);
     if(ans==-1){
         printf("Invalid command\n");
@@ -57,7 +59,7 @@ void buy_movie(Client c){
     scanf("%d", &movieID);
     sprintf(movieName, "movie_%d", movieID);
 
-    MovieFile movie_file=buy_ticket(movieName);
+    MovieFile movie_file = buy_ticket(movieName);
     if(movie_file.movie.th.seats_left==0){
          printf("Sorry, this movie is full\n");
          //llamar a unlock
@@ -96,20 +98,20 @@ void list_movies(void){
     printf("\n");
 }
 
-int check_command(char * com){
+int check_command(char *com){
     int i;
-    for(i=0;i<COMMAND_SIZE;i++){
-        if(strcmp(commands[i],com)==0){
+    for(i = 0; i < COMMAND_SIZE; i++){
+        if( strcmp(commands[i],com) == 0 ){
             return i;
         }
     }
     return -1;
 }
 
-
 Client login(void){
     char email[MAX_LENGTH],
          pw[MAX_LENGTH];
+
     printf("Log In\nEmail:");
     scanf("%s", email);
     printf("Password:");
@@ -122,22 +124,19 @@ Client login(void){
     return c;
 }
 
-
 void cancelPurchase(){
     /* TODO */
     return;
 }
 
-
-
 void printSeats(char seats[][MAX_LENGTH]){
-    int rows, cols, seatNumber;
-    for(rows = 0; rows < 6; rows++){
-        for(cols = 0; cols < 10; cols++){
-            if(strcmp(seats[seatNumber = rows*10 + cols],"")==0){
+    int row, col, seatNumber;
+    for(row = 0; row < ROWS; row++){
+        for(col = 0; col < COLS; col++){
+            if(strcmp(seats[seatNumber = row*10 + col],"")==0){
                 printf("%4d", seatNumber+1);
             }else{
-                printf("%.4s", "X");
+                printf("%4s", "X");
             }
         }
         printf("\n");
