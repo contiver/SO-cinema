@@ -16,6 +16,7 @@ void execute_command(char *command, Client c);
 int check_command(char * com);
 void printSeats(char seats[][MAX_LENGTH]);
 void list_movies(void);
+void cancel_ticket(Client c);
 
 string commands[] = { "ListMovies", "BuyMovie", "CancelMovie", "Exit" };
 
@@ -44,11 +45,24 @@ void execute_command(char *command, Client c){
             case 1:
                     buy_movie(c); break;
             case 2:
-                    // cancel_ticket(); break;
+                    cancel_ticket(c); break;
             case 3:
                     exit(1);
         }
     }
+}
+
+void cancel_ticket(Client c){
+    int movieID;
+    char movieName[MAX_NAME_LENGTH];
+    char sts[MAX_DISPLAY]="Your current seats are:";
+
+    printf("Insert movie code:\n");
+    scanf("%d", &movieID);    
+    sprintf(movieName, "./src/database/movie_%d", movieID);
+
+    search_client(c,movieName,sts);
+    printf("%s\n",sts);
 }
 
 void buy_movie(Client c){
@@ -59,7 +73,7 @@ void buy_movie(Client c){
     
     sprintf(movieName, "./src/database/movie_%d", movieID);
 
-    MovieFile movie_file = buy_ticket(movieName);
+    MovieFile movie_file = access_movie(movieName);
     if(movie_file.movie.th.seats_left==0){
          printf("Sorry, this movie is full\n");
          //sale y va a unlock
@@ -135,11 +149,6 @@ Client login(void){
     strncpy(c.pw, pw, MAX_LENGTH);
     strncpy(c.name, "DEFAULT_NAME", MAX_LENGTH);
     return c;
-}
-
-void cancelPurchase(){
-    /* TODO */
-    return;
 }
 
 void printSeats(char seats[][MAX_LENGTH]){

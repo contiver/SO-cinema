@@ -9,7 +9,7 @@ int unlockFile(int fd);
 int wrlockFile(int fd);
 int rdlockFile(int fd);
 
-MovieFile buy_ticket(char movieName[MAX_NAME_LENGTH]){
+MovieFile access_movie(char movieName[MAX_NAME_LENGTH]){
     int fd;
     Movie requested_movie;
     MovieFile mf;    
@@ -100,4 +100,18 @@ int buy_seat(int seat, Client c, MovieFile mf){
     }
     fclose(file);
     return 0; //reserva ok
+}
+
+void search_client(Client c, char movieName[MAX_NAME_LENGTH],char sts[MAX_DISPLAY]){
+    MovieFile mf= access_movie(movieName);
+    int s=1;
+    char buff[10];
+    
+    while(s<=60){
+        if(strcmp(c.email, mf.movie.th.seats[s++])==0){
+            sprintf(buff, "%d", s);
+            strcat(sts,buff);   
+            strcat(sts,"  ");
+        }
+    }
 }
