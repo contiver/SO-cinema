@@ -1,6 +1,7 @@
 *~
 *.o
 .__*
+*.swp
 
 #Executables
 *.out

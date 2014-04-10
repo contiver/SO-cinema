@@ -77,16 +77,25 @@ int check_command(char *com){
  ********* Hacerla wrapper de una funcion del back ****
  ********* como buy_ticket ! ************************/
 void cancel_ticket(Client c){
-    int movieID;
+    int movieID, seat;
+    
+    printf("Insert movie code:\n");
+    scanf("%d", &movieID);    
+    printf("Insert seat ticket to cancel:\n");
+    scanf("%d", &seat);    
+
+    if( cancel_seat(c, movieID, seat) == 1){
+        printf("Sorry, we couldn't cancel the seat because it isn't yours\n");
+    }
+   /* 
     char movieName[MAX_NAME_LENGTH];
     char sts[MAX_DISPLAY]="Your current seats are:";
 
-    printf("Insert movie code:\n");
-    scanf("%d", &movieID);    
     sprintf(movieName, "./src/database/movie_%d", movieID);
 
     //search_client(c,movieName,sts);
     printf("%s\n",sts);
+    */
 }
 
 void buy_ticket(Client c){
@@ -98,7 +107,7 @@ void buy_ticket(Client c){
     get_movie(&m, movieID);    
 
     if( m.th.seats_left == 0 ){
-        printf("Sorry, no seats left for this movie");
+        printf("Sorry, no seats left for this movie\n");
         return;
     }
     while(aux){
@@ -107,16 +116,15 @@ void buy_ticket(Client c){
         printSeats(m.th.seats);
         scanf("%d", &seat); 
         aux = reserve_seat(c, m, seat);
-        if( aux == -1 ){
+        if( aux == SEAT_TAKEN ){
             printf("Sorry, that seat is taken\n");
-        }else if(aux==-2){
+        }else if(aux == INVALID_SEAT){
             printf("Invalid number of seat\n");
         }
     //si devuelve 0 es que ya reservo ese asiento
     }
     printf("The purchase has been successful\n");
 }
-
 
 void list_movies(void){
     int code = 1, i = 0, error;
