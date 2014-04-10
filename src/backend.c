@@ -3,106 +3,118 @@
 #include "../include/backend.h"
 #include "../include/client.h"
 
+#define MOVIE_PATH "./src/database/movie_%d"
+#define NO_SEATS -1
+
 /* Las funciones de filelocking son especificas de esta implementacion,
    por lo que los prototipos no deberian ir en el header */
+struct flock fl = {.l_start = 0, .l_whence = SEEK_SET, .l_len = 0};
 int unlockFile(int fd);
 int wrlockFile(int fd);
 int rdlockFile(int fd);
 
-MovieFile access_movie(char movieName[MAX_NAME_LENGTH]){
-    int fd;
-    Movie requested_movie;
-    MovieFile mf;    
+/* En principio esta es una funcion "privada", con lo que tampoco
+   deberia formar parte del header */
+int reserve_seat(Client c, Movie m, int seat);
+
+void get_movie(Movie *m, int movieID){
+    char movieName[MAX_NAME_LENGTH];
+    sprintf(movieName, MOVIE_PATH, movieID);
 
     FILE *file = fopen(movieName, "rb+");
     if( file == NULL ){
         printf("Invalid movie code: not found in database\n");
         exit(1);
     }
-    fd = fileno(file);
-    
-    //lock de la movie para que nadie mas pueda leerla
-    //ni escribirla
 
-    if(wrlockFile(fd) == -1){
+    int fd = fileno(file);
+    
+    // TODO hace falta usar un lock aca? 
+    // lock de la movie para que nadie mas pueda leerla ni escribirla
+    if( wrlockFile(fd) == -1 ){
         printf("Error locking file\n");
         exit(1);
     }
 
-    if(fread(&requested_movie, sizeof(Movie), 1, file) != 1){
+    if( fread(m, sizeof(Movie), 1, file) != 1 ){
         printf("Error reading from file\n"); 
         exit(1);
     }
-    
-    mf.movie=requested_movie;
-    mf.fd=fd;
-    return mf;
-
-    //unlockFile(fd);
 }
-
+/*
+        //sale y va a unlock
+        //falta ver donde cerrar el archivo
+    }else{
+        while( aux != 0 ){
+            printf("Please choose a seat\n");
+            printf("%s %s\n", m.name, m.time);
+            printSeats(m.th.seats);
+            scanf("%d",&seat);
+            aux = reserve_seat(c, m, seat);
+            if( aux == -1 ){
+                printf("Sorry, that seat is taken\n");
+            }
+            else if(aux==-2){
+                printf("Invalid number of seat\n");
+            }
+            //si devuelve 0 es que ya reservo ese asiento
+        }
+        printf("The purchase has been successful\n");
+    }
+    //al terminar unlockear en el back
+}
+*/
 // lock de write, nadie lo puede ni leer ni escribir   
 // lock de read, lo pueden leer pero no lo pueden escribir   
 
-int rdlockFile(int fd){
-    struct flock fl = {.l_type = F_RDLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int wrlockFile(int fd){
-    struct flock fl = {.l_type = F_WRLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int unlockFile(int fd){
-    struct flock fl = {.l_type = F_UNLCK, .l_start = 0,
-                       .l_whence = SEEK_SET, .l_len = 0};
-    return fcntl(fd, F_SETLKW, &fl);
-}
-
-int buy_seat(int seat, Client c, MovieFile mf){
+int reserve_seat(Client c, Movie m, int seat){
     char movieName[40];
-    int i=0;
-    if(seat>60 || seat<1){
-        return -2;
-    }
-    if(strcmp(mf.movie.th.seats[seat-1],"")!=0){
-        return -1; //ese asiento esta ocupado
-    }
-    strncpy(mf.movie.th.seats[seat-1],c.email,MAX_LENGTH);
-
-    Theatre newth;
-    newth.number= mf.movie.th.number;
-    newth.seats_left= (mf.movie.th.seats_left)-1;
-    for(i=0;i<STD_SEAT_QTY;i++){
-        strncpy(newth.seats[i],mf.movie.th.seats[i],MAX_LENGTH);
-    }
-                    
-    Movie newmovie;
-    newmovie.id= mf.movie.id;
-    strncpy(newmovie.name, mf.movie.name,MAX_NAME_LENGTH);
-    strncpy(newmovie.time, mf.movie.time,20);
-    newmovie.th= newth;
-
-    sprintf(movieName, "./src/database/movie_%d", mf.movie.id); 
+    int i = 0, fd;
    
-    //lo abre y lo trunca a long 0   
+    if( seat > STD_SEAT_QTY || seat < 1 ) return -2;
+    if( strcmp(m.th.seats[seat-1],"") != 0 ) return -1; // asiento ocupado
+    
+    m.th.seats_left = -1;
+    strncpy(m.th.seats[seat-1], c.email, MAX_LENGTH);
+    
+    sprintf(movieName, MOVIE_PATH, m.id); 
+
     FILE *file = fopen(movieName, "wb");
     if ( file == NULL ){
-        printf("error while creating movie_%d file\n", mf.movie.id);
+        printf("error while creating movie_%d file\n", m.id);
         exit(1);
     }
-    if( fwrite(&newmovie, sizeof(Movie), 1, file) != 1 ){
-            printf("error while writing movie_%d structure\n",mf.movie.id);
-            exit(1);
+
+    fd = fileno(file);
+
+    // TODO esta bien este file lock, no? o va en otro lado?
+    if( wrlockFile(fd) == -1 ){
+        printf("Error locking file\n");
+        exit(1);
     }
+
+    if( fwrite(&m, sizeof(Movie), 1, file) != 1 ){
+        printf("error while writing movie_%d structure\n", m.id);
+        exit(1);
+    }
+    
+    unlockFile(fd);
     fclose(file);
     return 0; //reserva ok
 }
 
-void search_client(Client c, char movieName[MAX_NAME_LENGTH],char sts[MAX_DISPLAY]){
+int get_movies_list(char *movies[10][60]){
+    FILE *file = fopen("./src/database/movie_list", "rb");
+    if( file == NULL ) return -1;
+    if( fread(movies, sizeof(char[10][60]), 1, file) != 1) return -2;
+    
+    return 0;
+}
+
+/*
+void search_client(Client c, char movieName[MAX_NAME_LENGTH], char sts[MAX_DISPLAY]){
+    FILE *file = fopen(movieName, "rb");
+    if( file == NULL ) 
     MovieFile mf= access_movie(movieName);
     int s=1;
     char buff[10];
@@ -114,4 +126,20 @@ void search_client(Client c, char movieName[MAX_NAME_LENGTH],char sts[MAX_DISPLA
             strcat(sts,"  ");
         }
     }
+}
+*/
+
+int rdlockFile(int fd){
+    fl.l_type = F_RDLCK;
+    return fcntl(fd, F_SETLKW, &fl);
+}
+
+int wrlockFile(int fd){
+    fl.l_type = F_WRLCK;
+    return fcntl(fd, F_SETLKW, &fl);
+}
+
+int unlockFile(int fd){
+    fl.l_type = F_UNLCK;
+    return fcntl(fd, F_SETLKW, &fl);
 }
