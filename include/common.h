@@ -7,7 +7,7 @@
 #include "client.h"
 
 #define MAX_DISPLAY 500
-#define MOVIE_PATH "./src/database/movie_%d"
+#define MOVIE_PATH "../../database/db/movie_%d"
 #define INVALID_SEAT -1
 #define SEAT_TAKEN -2
 

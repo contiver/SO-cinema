@@ -3,8 +3,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdbool.h>
-#include "../include/client.h"
-#include "../include/backend.h"
+#include "../../include/client.h"
+#include "../../include/common.h"
 
 #define COMMAND_SIZE 4
 #define ROWS 6

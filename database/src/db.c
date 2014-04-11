@@ -28,7 +28,7 @@ int main(void){
 void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
      int i, code=1;
      char movies[MOVIES_QTY][60];   
-     FILE *file = fopen("movie_list", "wb");
+     FILE *file = fopen("../db/movie_list", "wb");
      if ( file == NULL ){
             printf("error while creating movie_list file\n");
             exit(1);
@@ -61,7 +61,7 @@ void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
             strncpy((movie[i].th.seats)[j], "\0", MAX_LENGTH);
         }
 
-        sprintf(movieName, "movie_%d", movie[i].id);
+        sprintf(movieName, "../db/movie_%d", movie[i].id);
         FILE *file = fopen(movieName, "wb");
         if ( file == NULL ){
             printf("error while creating movie_%d file\n", i);

@@ -1,9 +1,10 @@
 #include <fcntl.h>
 #include <stdio.h>
-#include "../include/backend.h"
-#include "../include/client.h"
+#include "../../include/client.h"
+#include "../../include/common.h"
 
 #define NO_SEATS -1
+#define MLIST_PATH "../../database/db/movie_list"
 
 /* Las funciones de filelocking son especificas de esta implementacion,
    por lo que los prototipos no deberian ir en el header */
@@ -40,31 +41,6 @@ void get_movie(Movie *m, int movieID){
     }
     lockedfd = fd;
 }
-/*
-        //sale y va a unlock
-        //falta ver donde cerrar el archivo
-    }else{
-        while( aux != 0 ){
-            printf("Please choose a seat\n");
-            printf("%s %s\n", m.name, m.time);
-            printSeats(m.th.seats);
-            scanf("%d",&seat);
-            aux = reserve_seat(c, m, seat);
-            if( aux == -1 ){
-                printf("Sorry, that seat is taken\n");
-            }
-            else if(aux==-2){
-                printf("Invalid number of seat\n");
-            }
-            //si devuelve 0 es que ya reservo ese asiento
-        }
-        printf("The purchase has been successful\n");
-    }
-    //al terminar unlockear en el back
-}
-*/
-// lock de write, nadie lo puede ni leer ni escribir   
-// lock de read, lo pueden leer pero no lo pueden escribir   
 
 int reserve_seat(Client c, Movie m, int seat){
     char movieName[40];
@@ -84,13 +60,6 @@ int reserve_seat(Client c, Movie m, int seat){
         exit(1);
     }
 
-    // TODO esta bien este file lock?
-    /*
-    if( wrlockFile(fd) == -1 ){
-        printf("Error locking file\n");
-        exit(1);
-    }
-    */
     if( fwrite(&m, sizeof(Movie), 1, file) != 1 ){
         printf("error while writing movie_%d structure\n", m.id);
         exit(1);
@@ -110,7 +79,7 @@ int reserve_seat(Client c, Movie m, int seat){
 }
 
 int get_movies_list(char *movies[10][60]){
-    FILE *file = fopen("./src/database/movie_list", "rb");
+    FILE *file = fopen(MLIST_PATH, "rb");
     if( file == NULL ) return -1;
     if( fread(movies, sizeof(char[10][60]), 1, file) != 1) return -2;
     
@@ -153,24 +122,6 @@ int cancel_seat(Client c, int movieID, int seat){
     unlockFile(fd);
     return 1;
 }
-
-/*
-void search_client(Client c, char movieName[MAX_NAME_LENGTH], char sts[MAX_DISPLAY]){
-    FILE *file = fopen(movieName, "rb");
-    if( file == NULL ) 
-    MovieFile mf= access_movie(movieName);
-    int s=1;
-    char buff[10];
-    
-    while(s<=60){
-        if(strcmp(c.email, mf.movie.th.seats[s++])==0){
-            sprintf(buff, "%d", s);
-            strcat(sts,buff);   
-            strcat(sts,"  ");
-        }
-    }
-}
-*/
 
 int rdlockFile(int fd){
     fl.l_type = F_RDLCK;
