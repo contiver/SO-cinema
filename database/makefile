@@ -1,15 +1,16 @@
 CC = gcc
 CFLAGS = -Wall
 TARGET = client
-SRC= ./src
-BIN= ./bin
+SRC = ./src
+BIN = ./bin
 
 default: db
+	
+db: db.o
+	@mkdir -p $(BIN)
+	$(CC) $(CFLAGS) db.o -o $(BIN)/db
 
-db: $(BIN)/db.o
-	$(CC) $(CFLAGS) -o $(BIN)/db db.o
-
-$(BIN)/db.o:
+db.o: $(SRC)/db.c
 	$(CC) $(CFLAGS) -c $(SRC)/db.c 
 
 clean:

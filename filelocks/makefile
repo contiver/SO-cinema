@@ -3,17 +3,18 @@ CFLAGS = -Wall
 TARGET = client
 SRC = ./src
 BIN = ./bin
+INCLUDE = ../include
 
 default: client
 
-client: $(BIN)/client.o backend.o
-	$(CC) $(CFLAGS) -o $(BIN)/client client.o backend.o 
+client: $(BIN)/clientfront.o clientback.o
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o 
 
-$(BIN)/client.o: $(SRC)/client.c ../include/common.h ../include/client.h
-	$(CC) $(CFLAGS) -c $(SRC)/client.c $(SRC)/backend.c
+$(BIN)/clientfront.o: $(SRC)/clientfront.c $(INCLUDE)/clientback.h $(INCLUDE)/clientfront.h
+	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(SRC)/clientback.c
 
-backend.o: $(SRC)/backend.c ../include/common.h
-	$(CC) $(CFLAGS) -c $(SRC)/backend.c
+clientback.o: $(SRC)/clientback.c ../include/clientback.h
+	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
 
 clean:
 	$(RM) client *.o *~

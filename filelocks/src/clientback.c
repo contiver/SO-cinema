@@ -1,20 +1,23 @@
 #include <fcntl.h>
 #include <stdio.h>
-#include "../../include/client.h"
-#include "../../include/common.h"
+#include "../../include/clientfront.h"
+#include "../../include/clientback.h"
 
 #define NO_SEATS -1
 #define MLIST_PATH "../../database/db/movie_list"
 
-/* Las funciones de filelocking son especificas de esta implementacion,
-   por lo que los prototipos no deberian ir en el header */
+/* File locking auxiliary functions particular to the backend implementation */
 struct flock fl = {.l_start = 0, .l_whence = SEEK_SET, .l_len = 0};
 int unlockFile(int fd);
 int wrlockFile(int fd);
 int rdlockFile(int fd);
 
+/* These variables are set by get_movie when opening and locking the file
+   for the reserve_seat and cancel_seat functions to unlock it and close it
+   by calling the closeAndUnlock function */
 int lockedfd = -1;
 FILE *openedf = NULL;
+void closeAndUnlock(void);
 
 void get_movie(Movie *m, int movieID){
     char movieName[MAX_NAME_LENGTH];
@@ -28,7 +31,6 @@ void get_movie(Movie *m, int movieID){
 
     int fd = fileno(file);
     
-    // TODO hace falta usar un lock aca? 
     // lock de la movie para que nadie mas pueda leerla ni escribirla
     if( wrlockFile(fd) == -1 ){
         printf("Error locking file\n");
@@ -43,8 +45,7 @@ void get_movie(Movie *m, int movieID){
 }
 
 int reserve_seat(Client c, Movie m, int seat){
-    char movieName[40];
-    int i = 0, fd;
+    char movieName[MAX_NAME_LENGTH];
    
     if( seat > STD_SEAT_QTY || seat < 1 ) return INVALID_SEAT;
     if( strcmp(m.th.seats[seat-1],"") != 0 ) return SEAT_TAKEN; // asiento ocupado
@@ -65,16 +66,8 @@ int reserve_seat(Client c, Movie m, int seat){
         exit(1);
     }
     
-    unlockFile(fd);
     fclose(file);
-    if(lockedfd != -1){
-        unlockFile(lockedfd);
-        lockedfd = -1;
-    }
-    if(openedf != NULL){
-        fclose(openedf);
-        openedf = NULL;
-    }
+    closeAndUnlock();
     return 0; //reserva ok
 }
 
@@ -88,7 +81,7 @@ int get_movies_list(char *movies[10][60]){
 
 int cancel_seat(Client c, int movieID, int seat){
     int fd;
-    char movieName[40];
+    char movieName[MAX_NAME_LENGTH];
     Movie m;
     get_movie(&m, movieID);
     sprintf(movieName, MOVIE_PATH, m.id); 
@@ -105,8 +98,8 @@ int cancel_seat(Client c, int movieID, int seat){
 
         // TODO hace falta usar un lock aca? 
         // lock de la movie para que nadie mas pueda leerla ni escribirla
-        
-       if( wrlockFile(fileno(file)) == -1 ){
+       fd = fileno(file); 
+       if( wrlockFile(fd) == -1 ){
             printf("Error locking file\n");
             exit(1);
         }
@@ -119,7 +112,7 @@ int cancel_seat(Client c, int movieID, int seat){
         fclose(file);
         return 0;
     }
-    unlockFile(fd);
+    closeAndUnlock();
     return 1;
 }
 
@@ -136,4 +129,15 @@ int wrlockFile(int fd){
 int unlockFile(int fd){
     fl.l_type = F_UNLCK;
     return fcntl(fd, F_SETLKW, &fl);
+}
+
+void closeAndUnlock(void){
+    if(lockedfd != -1){
+        unlockFile(lockedfd);
+        lockedfd = -1;
+    }
+    if(openedf != NULL){
+        fclose(openedf);
+        openedf = NULL;
+    }
 }

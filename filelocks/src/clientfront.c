@@ -3,8 +3,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdbool.h>
-#include "../../include/client.h"
-#include "../../include/common.h"
+#include "../../include/clientfront.h"
+#include "../../include/clientback.h"
 
 #define COMMAND_SIZE 4
 #define ROWS 6
@@ -73,9 +73,6 @@ int check_command(char *com){
     return -1;
 }
 
-/** TODO
- ********* Hacerla wrapper de una funcion del back ****
- ********* como buy_ticket ! ************************/
 void cancel_ticket(Client c){
     int movieID, seat;
     
@@ -121,7 +118,6 @@ void buy_ticket(Client c){
         }else if(aux == INVALID_SEAT){
             printf("Invalid number of seat\n");
         }
-    //si devuelve 0 es que ya reservo ese asiento
     }
     printf("The purchase has been successful\n");
 }

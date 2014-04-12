@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "../../include/client.h"
+#include "../../include/clientback.h"
 #include "../../include/db.h"
 
 void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]);
@@ -26,7 +26,7 @@ int main(void){
 }
 
 void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
-     int i, code=1;
+     int i;
      char movies[MOVIES_QTY][60];   
      FILE *file = fopen("../db/movie_list", "wb");
      if ( file == NULL ){
@@ -39,7 +39,7 @@ void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
             strcat(movies[i], times[i]);
      }        
      if( fwrite(&movies, sizeof(movies), 1, file) != 1 ){
-            printf("error while writing movie_list structure\n", i);
+            printf("error while writing movie_list file\n");
             exit(1);
      }
      fclose(file);
@@ -51,7 +51,6 @@ void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
     Movie movie[10];
     
     for(i = 0; i < 10; i++){
-        printf("%d\n", i);
         movie[i].id = i+1;
         strncpy(movie[i].name, titles[i], MAX_LENGTH); 
         strncpy(movie[i].time, times[i], MAX_LENGTH);
