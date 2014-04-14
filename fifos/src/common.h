@@ -1,0 +1,14 @@
+
+#define CLIENT_FIFO_SIZE        51
+#define CLIENT_FIFO_TEMPLATE    "/tmp/fifo_cl.%ld"
+#define SERVER_PATHNAME         "/tmp/fifo_sv"
+
+
+typedef struct  {
+        pid_t pid;
+            int data_len;
+} Request;
+
+typedef struct  {
+        int data_len;
+} Response;

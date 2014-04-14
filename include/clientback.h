@@ -48,4 +48,3 @@ int reserve_seat(Client c, Movie m, int seat);
 void search_client(Client c, char movieName[MAX_NAME_LENGTH],char sts[MAX_DISPLAY]);
 
 #endif
-
