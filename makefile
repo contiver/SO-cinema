@@ -6,3 +6,4 @@ VPATH = src:include
 default:
 	cd database; make
 	cd filelocks; make
+	cd fifos; make

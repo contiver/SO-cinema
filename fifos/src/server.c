@@ -1,5 +1,8 @@
 #include <signal.h>
 #include "common.h"
+#include "../../include/dbAccess.h"
+
+typedef enum{RESERVE_SEAT, CANCEL_SEAT, GET_MOVIE, MOVIE_LIST} command;
 
 int main(int argc, char *argv[]){
     int serverFd, dummyFd, clientFd;
@@ -39,7 +42,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "Error reading request' discarding\n");    
             continue;
         } 
-
+        
         snprintf(clientFifo, CLIENT_FIFO_NAME_LEN, CLIENT_FIFO_TEMPLATE,
                 (long) req.pid);
         clientFd = open(clientFifo, O_WRONLY);
@@ -47,11 +50,35 @@ int main(int argc, char *argv[]){
             printf("couldn't open %s", clientFifo);
             continue;
         }
+
         /*Send responde and close FIFO */
-        resp.data_len = data_len;
+        resp = execRequest(req);
         if(write(clientFd, &resp, sizeof(Response)) != sizeof(Response))
             fprintf(stderr, "Error writing to FIFO %s\n", clientFifo);
         if(close(clientFd) == -1){
             printf("error closing"); 
         }
     }
+}
+
+Response execRequest(Request r){
+    Movie m;
+    Response resp;
+
+    switch(r.comm){
+        case RESERVE_SEAT:
+            resp.ret = reserve_seat(r.client, r.movie, r.seat);
+            break;
+        case CANCEL_SEAT:
+            resp.ret = cancel_seat(r.client, r.movieID, r.seat);
+            break;
+        case GET_MOVIE:
+            m = get_movie(r.movieID);
+            resp.m = m;
+            break;
+        case MOVIE_LIST:
+            //TODO IMPLEMENTAR
+            break;
+    }
+    return resp;
+}

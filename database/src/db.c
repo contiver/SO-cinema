@@ -6,13 +6,14 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "../../include/clientback.h"
+#include "../../include/dbAccess.h"
 #include "../../include/db.h"
 
 void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]);
 void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]);
 
-int main(void){
+int
+main(void){
     char titles[MOVIES_QTY][TITLE_LEN] = {"The Aristocats           ", "Space Jam                ", "Shrek                    ", "Garfield                 ", "The Lion King            ", "Jurassic Park            ", "The Parent Trap          ",
                        "Matilda                  ", "Casper                   ", "Honey I shrunk the kids  "}; 
     char times[MOVIES_QTY][TITLE_LEN] = {
@@ -25,7 +26,8 @@ int main(void){
     return 0;
 }
 
-void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
+void
+initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
      int i;
      char movies[MOVIES_QTY][60];   
      FILE *file = fopen("../db/movie_list", "wb");
@@ -45,7 +47,8 @@ void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
      fclose(file);
 }
 
-void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
+void
+initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
     int i, j;
     char movieName[40];
     Movie movie[10];

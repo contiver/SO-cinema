@@ -5,10 +5,14 @@
 
 
 typedef struct  {
-        pid_t pid;
-            int data_len;
+    pid_t pid;
+    command com;
+    Client client;
+    int movieID;
+    int seat;
 } Request;
 
 typedef struct  {
-        int data_len;
+    int ret;  // Value to interpret depending of what the client requested
+    Movie m;
 } Response;

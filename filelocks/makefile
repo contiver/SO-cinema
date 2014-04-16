@@ -1,20 +1,23 @@
 CC = gcc
 CFLAGS = -Wall
 TARGET = client
-SRC = ./src
+SRC = ../common
 BIN = ./bin
-INCLUDE = ../include
+#SRC = ../include
 
 default: client
 
-client: $(BIN)/clientfront.o clientback.o
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o 
+client: $(BIN)/clientfront.o dbAccess.o initializer.o
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o dbAccess.o initializer.o 
 
-$(BIN)/clientfront.o: $(SRC)/clientfront.c $(INCLUDE)/clientback.h $(INCLUDE)/clientfront.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(SRC)/clientback.c
+$(BIN)/clientfront.o: $(SRC)/clientfront.c $(SRC)/dbAccess.h $(SRC)/clientfront.h $(SRC)/initializer.h
+	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(SRC)/dbAccess.c ./src/initializer.c
 
-clientback.o: $(SRC)/clientback.c ../include/clientback.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
+dbAccess.o: $(SRC)/dbAccess.c $(SRC)/dbAccess.h
+	$(CC) $(CFLAGS) -c $(SRC)/dbAccess.c
+
+initializer.o: ./src/initializer.c $(SRC)/initializer.h
+	$(CC) $(CFLAGS) -c ./src/initializer.c 
 
 clean:
 	$(RM) client *.o *~

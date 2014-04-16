@@ -3,27 +3,15 @@
 #include <string.h>
 #include <fcntl.h>
 #include <stdbool.h>
-#include "../../include/clientfront.h"
-#include "../../include/clientback.h"
-
-#define COMMAND_SIZE 4
-#define ROWS 6
-#define COLS 10
-
-Client login(void);
-void execute_command(char *command, Client c);
-void buy_ticket(Client c);
-int check_command(char * com);
-void printSeats(char seats[][MAX_LENGTH]);
-void list_movies(void);
-void cancel_ticket(Client c);
-
-string commands[] = { "ListMovies", "BuyMovie", "CancelMovie", "Exit" };
+#include "clientfront.h"
+#include "initializer.h"
+#include "dbAccess.h"
 
 int main(void){
     char command[20]="";
     printf("\nWelcome to RetroMovies :)\n");
     Client c = login();
+    initializeClient();
     while(true){
         printf("\nPlease type the desired option:\n");  
         printf("ListMovies\nBuyMovie\nCancelMovie\nExit\n\n");
@@ -101,20 +89,28 @@ void buy_ticket(Client c){
     scanf("%d", &movieID);
 
     Movie m;
-    get_movie(&m, movieID);    
+    m.name[0] = 0;
+    m = get_movie(movieID);    
 
-    if( m.th.seats_left == 0 ){
+    if(m.name[0] == 0){
+        printf("Sorry, either the movie code is invalid, or an error\
+                has ocurred while trying to access the database\n");
+        return;
+    }
+
+    if( /*noSeatsLeft(m)*/ m.th.seats_left == 0 ){
         printf("Sorry, no seats left for this movie\n");
         return;
     }
+
     while(aux){
         printf("Please choose a seat\n"); 
         printf("%s %s\n", m.name, m.time);
         printSeats(m.th.seats);
         scanf("%d", &seat); 
-        aux = reserve_seat(c, m, seat);
+        aux = reserve_seat(c, movieID, seat);
         if( aux == SEAT_TAKEN ){
-            printf("Sorry, that seat is taken\n");
+            printf("Sorry, that seat is taken, please try with another one\n");
         }else if(aux == INVALID_SEAT){
             printf("Invalid number of seat\n");
         }
