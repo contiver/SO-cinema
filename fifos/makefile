@@ -3,17 +3,26 @@ CFLAGS = -Wall
 TARGET = client
 SRC = ./src
 BIN = ./bin
-COMMON = ../include
+COMMON = ../common
 
-default: client
+default: client server
 
-client: $(BIN)/clientfront.o dbAccess.o
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o dbAccess.o 
+client: clientfront.o clientback.o
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o
 
-$(BIN)/clientfront.o: $(SRC)/clientfront.c $(COMMON)/dbAccess.h $(COMMON)/clientfront.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(COMMON)/dbAccess.c
+clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
+	$(CC) $(CFLAGS) -c $(COMMON)/clientfront.c 
 
-dbAccess.o: $(COMMON)/dbAccess.c $(COMMON)/dbAccess.h
+clientback.o: $(SRC)/clientback.c ./include/fifo.h $(COMMON)/shared.h $(COMMON)/dbAccess.h
+	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
+
+server: $(SRC)/server.o $(COMMON)/dbAccess.o
+	$(CC) $(CFLAGS) -o $(BIN)/server $(SRC)/server.c $(COMMON)/dbAccess.c
+
+server.o: $(SRC)/server.c $(COMMON)/dbAccess.c ./include/fifo.h $(COMMON)/shared.h
+	$(CC) $(CFLAGS) -c $(SRC)/server.c $(COMMON)/dbAccess.c
+
+dbAccess.o: $(COMMON)/dbAccess.c $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/dbAccess.c
 
 clean:

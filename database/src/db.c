@@ -6,8 +6,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "../../include/dbAccess.h"
-#include "../../include/db.h"
+#include "../../common/shared.h"
+#include "../../common/dbAccess.h"
+#include "../../common/db.h"
 
 void initializeMovies(char titles[][TITLE_LEN], char times[][TITLE_LEN]);
 void initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]);

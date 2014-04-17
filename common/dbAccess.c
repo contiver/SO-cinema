@@ -9,12 +9,8 @@ int unlockFile(int fd);
 int wrlockFile(int fd);
 int rdlockFile(int fd);
 
-/* These variables are set by get_movie when opening and locking the file
-   for the reserve_seat and cancel_seat functions to unlock it and close it
-   by calling the closeAndUnlock function */
-void closeAndUnlock(void);
-
-Movie get_movie(int movieID){
+Movie
+get_movie(int movieID){
     Movie m;
     m.name[0] = 0;
     char movieName[MAX_NAME_LENGTH];
@@ -44,7 +40,8 @@ Movie get_movie(int movieID){
     return m;
 }
 
-int reserve_seat(Client c, int movieID, int seat){
+int
+reserve_seat(Client c, int movieID, int seat){
     int fd;
     Movie m;
     char movieName[MAX_NAME_LENGTH];
@@ -100,7 +97,8 @@ int reserve_seat(Client c, int movieID, int seat){
     return 0; //reserva ok
 }
 
-int get_movies_list(char *movies_list[10][60]){
+int
+get_movies_list(char *movies_list[10][60]){
     //char movie_list[10][60];
     FILE *file = fopen(MLIST_PATH, "rb");
     if( file == NULL ) return -1;
@@ -109,7 +107,8 @@ int get_movies_list(char *movies_list[10][60]){
     return 0;
 }
 
-int cancel_seat(Client c, int movieID, int seat){
+int
+cancel_seat(Client c, int movieID, int seat){
     int fd;
     char movieName[MAX_NAME_LENGTH];
     Movie m;
@@ -144,32 +143,23 @@ int cancel_seat(Client c, int movieID, int seat){
     return 1;
 }
 
-int rdlockFile(int fd){
+int
+rdlockFile(int fd){
     fl.l_type = F_RDLCK;
     return fcntl(fd, F_SETLKW, &fl);
 }
 
-int wrlockFile(int fd){
+int
+wrlockFile(int fd){
     fl.l_type = F_WRLCK;
     return fcntl(fd, F_SETLKW, &fl);
 }
 
-int unlockFile(int fd){
+int
+unlockFile(int fd){
     fl.l_type = F_UNLCK;
     return fcntl(fd, F_SETLKW, &fl);
 }
-/*
-void closeAndUnlock(void){
-    if(lockedfd != -1){
-        unlockFile(lockedfd);
-        lockedfd = -1;
-    }
-    if(openedf != NULL){
-        fclose(openedf);
-        openedf = NULL;
-    }
-}
-*/
 
 bool noSeatsLeft(Movie m){
     return m.th.seats_left == 0;

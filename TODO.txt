@@ -1,0 +1,3 @@
+Ver como eliminar los fifos luego de salir del proceso del cliente y el servidor
+Ver cuando hacer close de los open fifos del servidor (quiza enviar un mensaje avisando que cierre la conexion?)
+Implementar el movie_list de los fifos!

@@ -98,7 +98,7 @@ void buy_ticket(Client c){
         return;
     }
 
-    if( /*noSeatsLeft(m)*/ m.th.seats_left == 0 ){
+    if( m.th.seats_left == 0 ){
         printf("Sorry, no seats left for this movie\n");
         return;
     }
