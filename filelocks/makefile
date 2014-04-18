@@ -8,6 +8,7 @@ BIN = ./bin
 default: client
 
 client: $(BIN)/clientfront.o dbAccess.o initializer.o
+	@mkdir -p $(BIN)
 	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o dbAccess.o initializer.o 
 
 $(BIN)/clientfront.o: $(SRC)/clientfront.c $(SRC)/dbAccess.h $(SRC)/clientfront.h $(SRC)/initializer.h

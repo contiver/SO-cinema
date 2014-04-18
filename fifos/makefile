@@ -8,6 +8,7 @@ COMMON = ../common
 default: client server
 
 client: clientfront.o clientback.o
+	@mkdir -p $(BIN)
 	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
