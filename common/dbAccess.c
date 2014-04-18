@@ -46,8 +46,9 @@ reserve_seat(Client c, int movieID, int seat){
     Movie m;
     char movieName[MAX_NAME_LENGTH];
      
-    if( seat > STD_SEAT_QTY || seat < 1 ) return INVALID_SEAT;
-    
+    if( !(1<seat && seat< STD_SEAT_QTY)){
+	return INVALID_SEAT;
+    }
     sprintf(movieName, MOVIE_PATH, movieID); 
     FILE *file = fopen(movieName, "rb+");
     if ( file == NULL ){

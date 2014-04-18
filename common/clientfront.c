@@ -72,6 +72,9 @@ void cancel_ticket(Client c){
     if( cancel_seat(c, movieID, seat) == 1){
         printf("Sorry, we couldn't cancel the seat because it isn't yours\n");
     }
+	else{
+		printf("Your seat has been cancelled\n");
+	}
    /* 
     char movieName[MAX_NAME_LENGTH];
     char sts[MAX_DISPLAY]="Your current seats are:";
@@ -107,13 +110,22 @@ void buy_ticket(Client c){
         printf("Please choose a seat\n"); 
         printf("%s %s\n", m.name, m.time);
         printSeats(m.th.seats);
-        scanf("%d", &seat); 
-        aux = reserve_seat(c, movieID, seat);
-        if( aux == SEAT_TAKEN ){
-            printf("Sorry, that seat is taken, please try with another one\n");
-        }else if(aux == INVALID_SEAT){
-            printf("Invalid number of seat\n");
-        }
+
+	char buf[1024];
+	fgets(buf,sizeof(buf),stdin);
+
+        if(scanf("%d", &seat)!=1){
+		aux = INVALID_SEAT;
+		printf("Invalid number of seat\n");
+	}
+	else{
+        	aux = reserve_seat(c, movieID, seat);
+        	if( aux == SEAT_TAKEN ){
+            	printf("Sorry, that seat is taken, please try with another one\n");
+        	}else if(aux == INVALID_SEAT){
+            	printf("Invalid number of seat\n");
+        	}
+	}
     }
     printf("The purchase has been successful\n");
 }
@@ -128,6 +140,7 @@ void list_movies(void){
             case -2: printf("Error reading from file\n"); 
                      break;
         }
+	return;
     }
     printf("------------------------------------------------------------\n");
     for(i = 0; i < 10; i++){
