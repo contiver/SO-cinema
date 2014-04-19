@@ -13,7 +13,7 @@ fatal(char *s)
     exit(1);
 }
  
-void *
+Request *
 getmem(void)
 {
     int fd;
@@ -38,7 +38,7 @@ getmem(void)
 void
 initmutex(void)
 {
-    if (s1 == NULL && !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT|O_EXCL, 0666, 1)))
+    if (s1 == NULL && !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT, 0666, 1)))
         fatal("sem_open");
     if(s2 == NULL){
         if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 1)) ){

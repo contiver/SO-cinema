@@ -1,0 +1,1 @@
+usar shm_unlink cuando se haga exit o control+c !

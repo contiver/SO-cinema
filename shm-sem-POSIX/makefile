@@ -9,19 +9,19 @@ default: client server
 
 client: clientfront.o clientback.o mutual.o
 	@mkdir -p $(BIN)
-	$(CC) $(CFLAGS) -lrt -o $(BIN)/client clientfront.o clientback.o mutual.o 
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o mutual.o -lpthread -lrt 
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/clientfront.c 
 
 clientback.o: $(SRC)/clientback.c $(COMMON)/ipc.h $(COMMON)/shared.h $(COMMON)/dbAccess.h $(SRC)/mutual.c $(SRC)/mutual.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientback.c $(SRC)/mutual.c
+	$(CC) $(CFLAGS) -c $(SRC)/clientback.c $(SRC)/mutual.c -lrt
 
 mutual.o: $(SRC)/mutual.c $(SRC)/mutual.h
-	$(CC) $(CFLAGS) $(SRC)/mutual.c 
+	$(CC) $(CFLAGS) -lrt $(SRC)/mutual.c
 
 server: server.o $(COMMON)/dbAccess.o mutual.o
-	$(CC) $(CFLAGS) -o $(BIN)/server $(SRC)/server.o $(COMMON)/dbAccess.o $(SRC)/mutual.o
+	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o mutual.o -lpthread -lrt
 
 server.o: $(SRC)/server.c $(COMMON)/dbAccess.c $(SRC)/mutual.c $(COMMON)/ipc.h $(COMMON)/shared.h
 	$(CC) $(CFLAGS) -c $(SRC)/server.c $(COMMON)/dbAccess.c $(SRC)/mutual.c

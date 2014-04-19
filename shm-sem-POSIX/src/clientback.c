@@ -9,44 +9,11 @@ static Response *resp;
 
 void
 initializeClient(void){
-    req = getmem();
+    req = (Request *)getmem();
+    resp = (Response *) req;
     initmutex();
-   /*
-    while ( (n = read(0, resp, sizeof(Response))) > 0  ){
-            enter();
-            sprintf(req, "%->*s", n, buf);
-            printf("Cliente escribe: %s", req);
-            leave();
-        }
-    printf("Cliente termina\n");
-    */
     return;
- }
-
-/*
-
-int
-initiateConnection(){
-    req->comm = TEST_CONNECTION;
-    resp->ret = -1; // if value isn't set to 0 on return an error occurred
-    printf("1\n");
-    writeInFifo();
-    printf("2\n");
-
-    clientFd = open(clientFifo, O_RDONLY);
-    if(clientFd == -1){
-        printf("Error opening client FIFO\n");
-        exit(1);
-    }
-    printf("3\n");
-    if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response)){
-        fatal("Can't read response from the server 4\n");
-    }
-    printf("termine de leer\n");
-
-    return resp->ret;
 }
-*/
 
 Movie
 get_movie(int movieID){

@@ -16,6 +16,7 @@ get_movie(int movieID){
     char movieName[MAX_NAME_LENGTH];
     sprintf(movieName, MOVIE_PATH, movieID);
 
+    printf("%s\n", movieName);
     FILE *file = fopen(movieName, "rb+");
     if( file == NULL ){
         printf("Invalid movie code: not found in database\n");

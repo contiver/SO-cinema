@@ -8,8 +8,8 @@
 #include "shared.h"
 
 #define MAX_DISPLAY 500
-#define MOVIE_PATH "../../database/bin/movie_%d"
-#define MLIST_PATH "../../database/bin/movie_list"
+#define MOVIE_PATH "../../database/db/movie_%d"
+#define MLIST_PATH "../../database/db/movie_list"
 #define INVALID_SEAT -1
 #define SEAT_TAKEN -2
 #define NO_SEATS -1

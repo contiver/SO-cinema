@@ -2,7 +2,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "../include/fifo.h"
+#include "../../common/ipc.h"
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
 #include "mutual.h"
@@ -14,14 +14,16 @@ static Response *resp;
 int main(int argc, char *argv[]){
 
     req = getmem(); // Request is bigger than Response
+    printf("dir de memoria: %d\n",(int)req);
+    memset(req, 0, SIZE);
     initmutex();
     resp = malloc(sizeof(Response));
 
     while( 1 ){
-        sem_wait(s2);
+        enter2();
         *resp = execRequest(*req);
-        memcpy((Response *) resp, (Request *) req, sizeof(Response));
-        sem_post(s3);
+        memcpy((Response *) req, (Request *) resp, sizeof(Response));
+        leave3();
     }
 }
 
@@ -36,6 +38,7 @@ Response execRequest(Request r){
             resp.ret = cancel_seat(r.client, r.movieID, r.seat);
             break;
         case GET_MOVIE:
+        //    printf("%d", r.movieID);// TODO END MY SUFFERING, DELETE ME
             resp.m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
