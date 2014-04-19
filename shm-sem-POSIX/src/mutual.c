@@ -1,5 +1,6 @@
 #include "mutual.h"
 #include <stdio.h>
+#include <signal.h>
 #include <errno.h>
 
 static sem_t *s1 = NULL;
@@ -13,11 +14,10 @@ fatal(char *s)
     exit(1);
 }
  
-Request *
+void *
 getmem(void)
 {
     int fd;
-   // char *mem;
     Request *mem;
      
     if ( (fd = shm_open("/message", O_RDWR|O_CREAT, 0666)) == -1  )
@@ -34,24 +34,28 @@ getmem(void)
     }
     return mem;
 }
+
+void
+onSigInt(int sig){
+    sem_unlink("/mutex1");
+    sem_unlink("/mutex2");
+    sem_unlink("/mutex3");
+    exit(1);
+}
+
+
  
 void
 initmutex(void)
 {
-    if (s1 == NULL && !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT, 0666, 1)))
+    signal(SIGINT, onSigInt);
+
+    if( !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
-    if(s2 == NULL){
-        if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 1)) ){
-            fatal("sem_open");
-        }
-        sem_post(s2); // start with s2 down
-    }
-    if(s3 == NULL){
-        if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 1)) ){
-            fatal("sem_open");
-        }
-        sem_post(s3); // start with s3 down
-    }    
+    if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 1)) )
+        fatal("sem_open");
+    if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 1)) )
+        fatal("sem_open");
 }
  
 void

@@ -13,7 +13,7 @@
 #define SIZE sizeof(Request)
  
 void fatal(char *s);
-Request *getmem(void);
+void *getmem(void);
 void initmutex(void);
 void enter1(void);
 void enter2(void);

@@ -10,7 +10,8 @@ static Response *resp;
 void
 initializeClient(void){
     req = (Request *)getmem();
-    resp = (Response *) req;
+    printf("antes del initmutex\n");
+    resp = malloc(sizeof(Response));
     initmutex();
     return;
 }
@@ -22,7 +23,7 @@ get_movie(int movieID){
     req->movieID = movieID;
     leave2();
     enter3();
-    resp = (Response *) req;
+    memcpy(resp, req, sizeof(Response));
     leave1();
     return resp->m;
 }
@@ -39,7 +40,7 @@ cancel_seat(Client c, int movieID, int seat){
     req->movieID = movieID;
     req->seat = seat; leave2();
     enter3();
-    resp = (Response *) req;
+    memcpy(resp, req, sizeof(Response));
     leave1();
     return resp->ret;
 }
@@ -53,7 +54,7 @@ reserve_seat(Client c, int movieID, int seat){
     req->seat = seat;
     leave2();
     enter3();
-    resp = (Response *) req;
+    memcpy(resp, req, sizeof(Response));
     leave1();
     return resp->ret;
 }
