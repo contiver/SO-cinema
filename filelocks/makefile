@@ -7,18 +7,18 @@ BIN = ./bin
 
 default: client
 
-client: $(BIN)/clientfront.o dbAccess.o initializer.o
+client: $(BIN)/clientfront.o dbAccess.o clientback.o
 	@mkdir -p $(BIN)
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o dbAccess.o initializer.o 
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o dbAccess.o clientback.o 
 
-$(BIN)/clientfront.o: $(SRC)/clientfront.c $(SRC)/dbAccess.h $(SRC)/clientfront.h $(SRC)/initializer.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(SRC)/dbAccess.c ./src/initializer.c
+$(BIN)/clientfront.o: $(SRC)/clientfront.c $(SRC)/dbAccess.h $(SRC)/clientfront.h $(SRC)/clientback.h
+	$(CC) $(CFLAGS) -c $(SRC)/clientfront.c $(SRC)/dbAccess.c ./src/clientback.c
 
 dbAccess.o: $(SRC)/dbAccess.c $(SRC)/dbAccess.h
 	$(CC) $(CFLAGS) -c $(SRC)/dbAccess.c
 
-initializer.o: ./src/initializer.c $(SRC)/initializer.h
-	$(CC) $(CFLAGS) -c ./src/initializer.c 
+clientback.o: ./src/clientback.c $(SRC)/clientback.h
+	$(CC) $(CFLAGS) -c ./src/clientback.c 
 
 clean:
 	$(RM) client *.o *~

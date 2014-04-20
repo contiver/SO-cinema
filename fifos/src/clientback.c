@@ -3,24 +3,28 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/stat.h>
 #include "../../common/dbAccess.h"
 #include "../../common/shared.h"
 #include "../include/fifo.h"
-#include "clientback.h"
-#include "../../common/initializer.h"
+#include "../../common/clientback.h"
+
+int initiateConnection(void);
+static void removeFifo(void);
+void fatal(char *s);
+void onSigInt(int sig);
 
 static char clientFifo[CLIENT_FIFO_NAME_LEN];
-static int serverFd, clientFd;
+static int serverFd = -1, clientFd = -1;
 static Request req;
 static Response resp;
 
-int initiateConnection(void);
 
 void
 fatal(char *s){
     perror(s);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 static void
@@ -39,48 +43,58 @@ initializeClient(){
     if(mkfifo(clientFifo, S_IRUSR | S_IWUSR | S_IWGRP) == -1
         && errno != EEXIST){
         printf("error while creating the fifo\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
    /* Open the server FIFO to send requests */
     serverFd = open(SERVER_FIFO, O_WRONLY);
     if(serverFd == -1){
         printf("Error opening server FIFO\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
+
+    signal(SIGINT, onSigInt);
     
     if(initiateConnection() != 0){
         printf("Error stablishing a connection to the server\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     
-    printf("test\n");
     if(atexit(removeFifo) != 0){
         printf("atexit error\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
-    printf("sali de la funcion!\n");
+}
+
+void
+terminateClient(void){
+    int exit_status = EXIT_SUCCESS;
+    if(close(clientFd) != 0) exit_status = EXIT_FAILURE;
+    if(close(serverFd) != 0) exit_status = EXIT_FAILURE;
+    if(unlink(clientFifo) != 0) exit_status = EXIT_FAILURE;
+    exit(exit_status);
+}
+
+void onSigInt(int sig){
+    terminateClient();
 }
 
 int
 initiateConnection(){
     req.comm = TEST_CONNECTION;
+    // TODO ver si hace falta o no esto del ret=-1
     resp.ret = -1; /* if value isn't set to 0 on return an error occurred */
-    printf("1\n");
-    writeInFifo();
-    printf("2\n");
+    if(write(serverFd, &req, sizeof(Request)) != sizeof(Request))
+        fatal("Can't write to server\n");
 
     clientFd = open(clientFifo, O_RDONLY);
     if(clientFd == -1){
         printf("Error opening client FIFO\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
-    printf("3\n");
     if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response)){
-        fatal("Can't read response from the server 4\n");
+        fatal("Can't read response from the server\n");
     }
-    printf("termine de leer\n");
-
     return resp.ret;
 }
 
@@ -88,22 +102,13 @@ Movie
 get_movie(int movieID){
     req.comm = GET_MOVIE;
     req.movieID = movieID;
-    writeInFifo();
-
+    
+    if(write(serverFd, &req, sizeof(Request)) != sizeof(Request))
+        fatal("Can't write to server\n");
     if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response))
         fatal("Can't read response from the server\n");
 
     return resp.m;
-}
-
-void
-writeInFifo(){
-    if(write(serverFd, &req, sizeof(Request)) != sizeof(Request))
-        fatal("Can't write to server");
-
-    //clientFd = open(clientFifo, O_RDONLY);
-    //if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response))
-      //  fatal("Can't read response from the server\n");
 }
 
 int
@@ -116,10 +121,11 @@ cancel_seat(Client c, int movieID, int seat){
     req.comm = CANCEL_SEAT;
     req.movieID = movieID;
     req.seat = seat;
-    writeInFifo();
 
+    if(write(serverFd, &req, sizeof(Request)) != sizeof(Request))
+        fatal("Can't write to server\n");
     if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response))
-        fatal("Can't read response from the server");
+        fatal("Can't read response from the server\n");
 
     return resp.ret;
 }
@@ -130,10 +136,11 @@ reserve_seat(Client c, int movieID, int seat){
     req.client = c;
     req.movieID = movieID;
     req.seat = seat;
-    writeInFifo();
 
+    if(write(serverFd, &req, sizeof(Request)) != sizeof(Request))
+        fatal("Can't write to server\n");
     if(read(clientFd, &resp, sizeof(Response)) != sizeof(Response))
-        fatal("Can't read response from the server");
+        fatal("Can't read response from the server\n");
 
     return resp.ret;
 }

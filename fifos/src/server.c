@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
@@ -6,30 +7,35 @@
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
 
+void onSigInt(int sig);
+ 
 Response execRequest(Request r);
+static int serverFd = -1, dummyFd = -1, clientFd = -1;
 
 int main(int argc, char *argv[]){
-    int serverFd, dummyFd, clientFd;
     char clientFifo[CLIENT_FIFO_NAME_LEN];
     Request req;
     Response resp;
-
+    
     if(mkfifo(SERVER_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1
             && errno != EEXIST){
         printf("error creating server fifo");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
+    
+    signal(SIGINT, onSigInt);
+    
     serverFd = open(SERVER_FIFO, O_RDONLY);
     if(serverFd == -1){
         printf("error opening the server fifo");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Open an extra write descriptor, so that we never see EOF */
     dummyFd = open(SERVER_FIFO, O_WRONLY);
     if(dummyFd == -1){
         printf("error opening dummy fifo");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Ignore the SIGPIPE signal, so that if the server attempts to write to a 
@@ -38,8 +44,9 @@ int main(int argc, char *argv[]){
      * from the write() syscall */
     if(signal(SIGPIPE, SIG_IGN) == SIG_ERR){
         printf("signal");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
+
     for(;;){
         if(read(serverFd, &req, sizeof(Request)) != sizeof(Request)){
             fprintf(stderr, "Error reading request' discarding\n");    
@@ -62,6 +69,16 @@ int main(int argc, char *argv[]){
       //      printf("error closing FIFO %s\n", clientFifo); 
       //  }
     }
+}
+
+void
+onSigInt(int sig){
+    int exit_status = EXIT_SUCCESS;
+    if(clientFd != -1 && close(clientFd) != 0) exit_status = EXIT_FAILURE;
+    if(dummyFd != -1 && close(dummyFd) != 0) exit_status = EXIT_FAILURE;
+    if(serverFd != -1 && close(serverFd) != 0) exit_status = EXIT_FAILURE;
+    if(unlink(SERVER_FIFO) != 0) exit_status = EXIT_FAILURE;
+    exit(exit_status);
 }
 
 Response execRequest(Request r){

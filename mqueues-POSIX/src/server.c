@@ -3,6 +3,7 @@
 #include "mutual.h"
 
 void terminateServer(int sig);
+void execRequest(void);
 
 void
 fatal(char *s)
@@ -17,7 +18,6 @@ static RespMsg respMsg;
 int
 main(void){
     mqd_t qin, qout;
-    int n;
     char cltname[100];
     
     signal(SIGINT, terminateServer);

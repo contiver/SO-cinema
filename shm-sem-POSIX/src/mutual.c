@@ -3,20 +3,25 @@
 #include <signal.h>
 #include <errno.h>
 
+
 static sem_t *s1 = NULL;
 static sem_t *s2 = NULL;
 static sem_t *s3 = NULL;
 
 void
-fatal(char *s)
-{
+fatal(char *s){
     perror(s);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
- 
+
+void
+onSigInt(int sig){
+    terminate();
+}
+
+
 void *
-getmem(void)
-{
+getmem(void){
     int fd;
     Request *mem;
      
@@ -24,7 +29,7 @@ getmem(void)
         fatal("sh_open");
     if ( ftruncate(fd, SIZE) == -1){
         printf("Error during ftrunctate\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     mem = mmap(NULL, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     if (mem == MAP_FAILED) 
@@ -36,28 +41,28 @@ getmem(void)
 }
 
 void
-onSigInt(int sig){
-    sem_unlink("/mutex1");
-    sem_unlink("/mutex2");
-    sem_unlink("/mutex3");
-    exit(1);
-}
-
-
- 
-void
-initmutex(void)
-{
-    signal(SIGINT, onSigInt);
-
+initmutex(void){
     if( !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
     if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
     if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
+    signal(SIGINT, onSigInt);
 }
- 
+
+void
+terminate(void){
+    int exit_status = EXIT_SUCCESS;
+    if(sem_close(s1) != 0) exit_status = EXIT_FAILURE;
+    if(sem_close(s2) != 0) exit_status = EXIT_FAILURE;
+    if(sem_close(s3) != 0) exit_status = EXIT_FAILURE;
+    if(sem_unlink("/mutex1") != 0); exit_status = EXIT_FAILURE;
+    if(sem_unlink("/mutex2") != 0); exit_status = EXIT_FAILURE;
+    if(sem_unlink("/mutex3") != 0); exit_status = EXIT_FAILURE;
+    exit(exit_status);
+}
+
 void
 enter1(void)
 {

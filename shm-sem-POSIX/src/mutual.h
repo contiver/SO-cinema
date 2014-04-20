@@ -15,6 +15,12 @@
 void fatal(char *s);
 void *getmem(void);
 void initmutex(void);
+
+/**
+ * Close open semaphores and unlink them before calling exit()
+ */
+void terminate(void);
+
 void enter1(void);
 void enter2(void);
 void enter3(void);

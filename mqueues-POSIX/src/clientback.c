@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <mqueue.h>
 #include "mutual.h"
+#include "../../common/clientback.h"
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
  
@@ -17,18 +18,23 @@ static RespMsg respMsg;
 static char cltname[100];
 static mqd_t qin, qout;
 
-void terminateClient(int sig);
-
+void onSigInt(int sig);
+ 
 void
 fatal(char *s)
 {
     perror(s);
     exit(1);
 }
+
+void
+onSigInt(int sig){
+    terminateClient();
+}
  
 void
 initializeClient(void){
-    signal(SIGINT, terminateClient);
+    signal(SIGINT, onSigInt);
     reqMsg.mtype = (long) getpid();
 
     struct mq_attr respAttr;
@@ -48,9 +54,8 @@ initializeClient(void){
     return;
 }
 
-// VER SI ESTA BIEN ESTO
 void
-terminateClient(int sig){
+terminateClient(void){
     mq_close(qin);
     mq_close(qout);
     mq_unlink(cltname);

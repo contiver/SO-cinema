@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "mutual.h"
+#include "../../common/clientback.h"
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
  
@@ -10,10 +11,14 @@ static Response *resp;
 void
 initializeClient(void){
     req = (Request *)getmem();
-    printf("antes del initmutex\n");
     resp = malloc(sizeof(Response));
     initmutex();
     return;
+}
+
+void
+terminateClient(void){
+    terminate();
 }
 
 Movie
@@ -38,7 +43,8 @@ cancel_seat(Client c, int movieID, int seat){
     enter1();
     req->comm = CANCEL_SEAT;
     req->movieID = movieID;
-    req->seat = seat; leave2();
+    req->seat = seat;
+    leave2();
     enter3();
     memcpy(resp, req, sizeof(Response));
     leave1();

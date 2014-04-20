@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include "clientfront.h"
-#include "initializer.h"
+#include "clientback.h"
 #include "dbAccess.h"
 
 int main(void){
@@ -39,15 +39,16 @@ Client login(void){
 void execute_command(char *command, Client c){
     int ans = check_command(command);
     switch( ans ){
-        case -1: printf("Invalid command\n");
-                 return;
         case 0:  list_movies();
                  break;
         case 1:  buy_ticket(c);
                  break;
         case 2:  cancel_ticket(c);
                  break;
-        case 3:  exit(1);
+        case 3:  terminateClient();
+                 break;
+        default: printf("Invalid command\n");
+                 return;
     }
 }
 
@@ -75,15 +76,6 @@ void cancel_ticket(Client c){
 	else{
 		printf("Your seat has been cancelled\n");
 	}
-   /* 
-    char movieName[MAX_NAME_LENGTH];
-    char sts[MAX_DISPLAY]="Your current seats are:";
-
-    sprintf(movieName, "./src/database/movie_%d", movieID);
-
-    //search_client(c,movieName,sts);
-    printf("%s\n",sts);
-    */
 }
 
 void buy_ticket(Client c){
