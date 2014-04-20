@@ -8,6 +8,7 @@ default: db
 	
 db: db.o
 	@mkdir -p $(BIN)
+	@mkdir -p ./db
 	$(CC) $(CFLAGS) db.o -o $(BIN)/db
 
 db.o: $(SRC)/db.c

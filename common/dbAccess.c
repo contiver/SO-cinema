@@ -46,9 +46,10 @@ reserve_seat(Client c, int movieID, int seat){
     Movie m;
     char movieName[MAX_NAME_LENGTH];
      
-    if( !(1<seat && seat< STD_SEAT_QTY)){
-	return INVALID_SEAT;
+    if( seat < 1 || seat > STD_SEAT_QTY ){
+	    return INVALID_SEAT;
     }
+
     sprintf(movieName, MOVIE_PATH, movieID); 
     FILE *file = fopen(movieName, "rb+");
     if ( file == NULL ){
@@ -94,7 +95,6 @@ reserve_seat(Client c, int movieID, int seat){
     }
     unlockFile(fd);
     fclose(file);
-    //closeAndUnlock();
     return 0; //reserva ok
 }
 
@@ -116,32 +116,32 @@ cancel_seat(Client c, int movieID, int seat){
     m = get_movie(movieID);
     sprintf(movieName, MOVIE_PATH, movieID); 
 
-    if( strncmp(m.th.seats[seat-1], c.email, strlen(c.email)) == 0 ){
-        strncpy(m.th.seats[seat-1], "\0", MAX_LENGTH);
-        m.th.seats_left++;
-        
-        FILE *file = fopen(movieName, "wb");
-        if( file == NULL ){
-            printf("Invalid movie code: not found in database\n");
-            exit(1);
-        }
-
-       fd = fileno(file); 
-       if( wrlockFile(fd) == -1 ){
-            printf("Error locking file 3\n");
-            return INVALID_MOVIE_ID; 
-        }
-        
-        if( fwrite(&m, sizeof(Movie), 1, file) != 1 ){
-            printf("error while writing movie_%d structure\n", m.id);
-            exit(1);
-        }
-        unlockFile(fd);
-        fclose(file);
-        return 0;
+    if( strncmp(m.th.seats[seat-1], c.email, strlen(c.email)) != 0 ){
+        return 1;
     }
-    //closeAndUnlock();
-    return 1;
+
+    strncpy(m.th.seats[seat-1], "\0", MAX_LENGTH);
+    m.th.seats_left++;
+
+    FILE *file = fopen(movieName, "wb");
+    if( file == NULL ){
+        printf("Invalid movie code: not found in database\n");
+        exit(1);
+    }
+
+    fd = fileno(file); 
+    if( wrlockFile(fd) == -1 ){
+        printf("Error locking file 3\n");
+        return INVALID_MOVIE_ID; 
+    }
+
+    if( fwrite(&m, sizeof(Movie), 1, file) != 1 ){
+        printf("error while writing movie_%d structure\n", m.id);
+        exit(1);
+    }
+    unlockFile(fd);
+    fclose(file);
+    return 0;
 }
 
 int

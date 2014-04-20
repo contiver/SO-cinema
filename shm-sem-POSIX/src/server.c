@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include "../../common/ipc.h"
 #include "../../common/shared.h"
@@ -23,7 +24,7 @@ main(int argc, char *argv[]){
     enter2();
     enter3();
 
-    while( 1 ){
+    while( true ){
         enter2();
         execRequest(*req);
         leave3();
