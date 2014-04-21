@@ -11,6 +11,8 @@
 #define SEAT_TAKEN -2
 #define NO_SEATS -1
 #define INVALID_MOVIE_ID -3
+#define MOVIE_PATH "../../database/db/movie_%d"
+#define MLIST_PATH "../../database/db/movie_list"
 
 bool noSeatsLeft(Movie m);
 
