@@ -9,6 +9,8 @@ default: client server
 
 client: clientfront.o clientback.o
 	@mkdir -p $(BIN)
+	@mkdir -p stoc
+	@mkdir -p ctos
 	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h  $(COMMON)/ipc.h
