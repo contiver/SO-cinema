@@ -14,8 +14,6 @@ static int serverFd = -1, dummyFd = -1, clientFd = -1;
 
 int main(int argc, char *argv[]){
     char clientFifo[CLIENT_FIFO_NAME_LEN];
-    Request req;
-    Response resp;
     
     if(mkfifo(SERVER_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1
             && errno != EEXIST){
