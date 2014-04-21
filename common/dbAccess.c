@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "dbAccess.h"
 
-#define MOVIE_PATH "../../database/db/movie_%d"
-#define MLIST_PATH "../../database/db/movie_list"
 
 /* File locking auxiliary functions particular to the backend implementation */
 struct flock fl = {.l_start = 0, .l_whence = SEEK_SET, .l_len = 0};
