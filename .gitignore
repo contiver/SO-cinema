@@ -5,9 +5,9 @@
 
 #Executables
 *.out
-client
-server
-db
+*client
+*server
+*db
 
 #Movie files
 movie_*
