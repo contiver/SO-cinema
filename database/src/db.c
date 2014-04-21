@@ -43,7 +43,7 @@ initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
      }        
      if( fwrite(&movies, sizeof(movies), 1, file) != 1 ){
             printf("error while writing movie_list file\n");
-            exit(1);
+            exit(EXIT_FAILURE);
      }
      fclose(file);
 }

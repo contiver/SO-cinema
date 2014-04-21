@@ -27,14 +27,14 @@ int main(int argc, char *argv[]){
     
     serverFd = open(SERVER_FIFO, O_RDONLY);
     if(serverFd == -1){
-        printf("error opening the server fifo");
+        printf("error opening the server fifo\n");
         exit(EXIT_FAILURE);
     }
 
     /* Open an extra write descriptor, so that we never see EOF */
     dummyFd = open(SERVER_FIFO, O_WRONLY);
     if(dummyFd == -1){
-        printf("error opening dummy fifo");
+        printf("error opening dummy fifo\n");
         exit(EXIT_FAILURE);
     }
 
@@ -43,7 +43,6 @@ int main(int argc, char *argv[]){
      * SIGPIPE signal which kills it by default, it receives an EPIPE error
      * from the write() syscall */
     if(signal(SIGPIPE, SIG_IGN) == SIG_ERR){
-        printf("signal");
         exit(EXIT_FAILURE);
     }
 
@@ -61,13 +60,14 @@ int main(int argc, char *argv[]){
             continue;
         }
 
+        int n;
         /*Send responde and close FIFO */
         resp = execRequest(req);
-        if(write(clientFd, &resp, sizeof(Response)) != sizeof(Response))
-            fprintf(stderr, "Error writing to FIFO %s\n", clientFifo);
-      //  if(close(clientFd) == -1){
-      //      printf("error closing FIFO %s\n", clientFifo); 
-      //  }
+        if((n =write(clientFd, &resp, sizeof(Response))) != sizeof(Response))
+            fprintf(stderr, "Error writing to FIFO %s; %d\n", clientFifo, n);
+        if(close(clientFd) == -1){
+           printf("error closing FIFO %s\n", clientFifo); 
+        }
     }
 }
 
