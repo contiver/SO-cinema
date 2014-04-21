@@ -11,7 +11,7 @@ db: db.o
 	@mkdir -p ./db
 	$(CC) $(CFLAGS) db.o -o $(BIN)/db
 
-db.o: $(SRC)/db.c
+db.o: $(SRC)/db.c ../common/shared.h ../common/dbAccess.h ../common/db.h
 	$(CC) $(CFLAGS) -c $(SRC)/db.c 
 
 clean:
