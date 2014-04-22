@@ -24,15 +24,15 @@ int main(void){
    	FILE *file = fopen(SERVER_FILE_PID, "wb");
     	if ( file == NULL ){
             printf("error while creating server_pid file\n");
-            exit(1);
+            exit(EXIT_FAILURE);
     	}
 	if( fwrite(&p, sizeof(p), 1, file) != 1 ){
             printf("error while writing server_pid file\n");
-            exit(1);
+            exit(EXIT_FAILURE);
      	}
      	fclose(file);
 
-	//signal(SIGINT,
+	signal(SIGINT, onSigInt);
 	
 
 	//no signals masked
@@ -46,6 +46,12 @@ int main(void){
 
 }
 
+void
+onSigInt(int sig){
+    int exit_status = EXIT_SUCCESS;
+    exit(exit_status);
+}
+
 void sig_usr1_handler(void){
 	sigset_t signal_set;
 	sigemptyset(&signal_set);
@@ -54,12 +60,14 @@ void sig_usr1_handler(void){
 
 	if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
 		printf("error blocking signals\n");
+		exit(EXIT_FAILURE);
 	}
 
 	read_client_messages();
 	
 	if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
 		printf("error unblocking signals\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -71,6 +79,7 @@ void read_client_messages(void){
 	struct dirent *direntp;
 	if((dirp= opendir(CTOS_PATH))==NULL){
 		printf("error opening ctos directory\n");
+		exit(EXIT_FAILURE);
 	}
 	while((direntp=readdir(dirp))!=NULL){
 		if(direntp->d_name[0] != '.'){
@@ -83,16 +92,18 @@ void read_client_messages(void){
 			FILE * file=fopen(clientFile,"rb");
 			if(file==NULL){
 				printf("error while opening %s file\n",clientFile);
-				//fatal("fopen");
+				exit(EXIT_FAILURE);
 			}
 			else{
 				if(fread(&req,sizeof(Request),1,file)==-1){
 					printf("error while reading from %s file\n",clientFile);
+					exit(EXIT_FAILURE);
 				}
 				printf("%d movie id\n",req.movieID);
 				fclose(file);
 				if(remove(clientFile)==-1){
 					printf("error while removing %s file\n",clientFile);
+					exit(EXIT_FAILURE);
 				}
 				resp= execRequest(req);
 
@@ -120,7 +131,7 @@ void server_communicate(long clientpid){
 			printf("Server process exists, but we dont have permission to send it a signal\n");
 		else if(errno==ESRCH)
 			printf("Server process does not exist\n");
-		//fatal("kill");
+		exit(EXIT_FAILURE);
 	}
 	if(s==0){
 		//el proceso existe y le podemos mandar una senial
@@ -132,11 +143,11 @@ void create_server_file(char * clientFile){
 	FILE *file=fopen(clientFile, "wb");
 	if(file==NULL){
 		printf("error while creating %s file\n",clientFile);
-		//fatal("fopen");
+		exit(EXIT_FAILURE);
 	}
 	if(fwrite(&resp,sizeof(Response),1,file)==-1){
 		printf("error while writing %s file\n",clientFile);
-		//fatal("fwrite");
+		exit(EXIT_FAILURE);
 	}
 	fclose(file);
 }
