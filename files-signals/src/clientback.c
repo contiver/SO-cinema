@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include "../../common/dbAccess.h"
 #include "../../common/shared.h"
 #include "../include/files-signals.h"
@@ -27,21 +28,19 @@ void
 initializeClient(){
     req.pid = (long)getpid();
 
-	char clientFile[MAX_NAME_LENGTH];
 	snprintf(clientFile, CLIENT_FILE_NAME_LEN, CLIENT_FILE_TEMPLATE,
                 (long) getpid());
-
-   	FILE *file = fopen(clientFile, "wb");
-    	if ( file == NULL ){
-            printf("error while creating %s file\n",clientFile);
-            exit(1);
-    }
+	signal(SIGINT, onSigInt);
 
 }
 
 void
 terminateClient(void){
-return;
+   return;
+}
+
+void onSigInt(int sig){
+    terminateClient();
 }
 
 
@@ -65,6 +64,59 @@ get_movies_list(char *movies[10][60]){
 Movie
 get_movie(int movieID){
 	Movie m;
-return m;
+
+	req.comm = GET_MOVIE;
+    req.movieID = movieID;
+
+	create_client_file();
+    communicate();
+
+    return m;
 }
 
+void create_client_file(void){
+	FILE *file=fopen(clientFile, "wb");
+	if(file==NULL){
+		printf("error while creating %s file\n",clientFile);
+		fatal("fopen");
+	}
+	if(fwrite(&req,sizeof(Request),1,file)==-1){
+		printf("error while writing %s file\n",clientFile);
+		fatal("fwrite");
+	}
+	fclose(file);
+}
+
+
+void communicate(void){
+	int s;
+	long serverpid;
+
+	FILE *file = fopen(SERVER_FILE_PID, "rb");
+   	if ( file == NULL ){
+		printf("error while opening server_pid file\n");
+        exit(1);
+    }
+	fread(&serverpid,sizeof(serverpid),1,file);
+	fclose(file);
+
+	s= kill(serverpid, SIGUSR1);
+
+	if(s==-1){
+		if(errno==EPERM)
+			printf("Server process exists, but we dont have permission to send it a signal\n");
+		else if(errno==ESRCH)
+			printf("Server process does not exist\n");
+		fatal("kill");
+	}
+	if(s==0){
+		printf("server process exists and we can send signal\n");
+		//el proceso existe y le podemos mandar una senial
+	}
+}
+
+void
+fatal(char *s){
+    perror(s);
+    exit(EXIT_FAILURE);
+}

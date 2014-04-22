@@ -22,7 +22,7 @@ clientback.o: $(SRC)/clientback.c ./include/files-signals.h $(COMMON)/shared.h $
 server: $(SRC)/server.o $(COMMON)/dbAccess.o
 	$(CC) $(CFLAGS) -o $(BIN)/server $(SRC)/server.c $(COMMON)/dbAccess.c
 
-server.o: $(SRC)/server.c $(COMMON)/dbAccess.c ./include/files-signals.h $(COMMON)/shared.h
+server.o: $(SRC)/server.c $(COMMON)/dbAccess.c ./include/files-signals.h $(COMMON)/shared.h $(COMMON)/ipc.h
 	$(CC) $(CFLAGS) -c $(SRC)/server.c $(COMMON)/dbAccess.c
 
 dbAccess.o: $(COMMON)/dbAccess.c $(COMMON)/dbAccess.h $(COMMON)/shared.h 

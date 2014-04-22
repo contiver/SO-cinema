@@ -6,9 +6,11 @@
 #include "../include/fifo.h"
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
+#include "../../common/ipc.h"
 
 void onSigInt(int sig);
- 
+Request req;
+Response resp; 
 Response execRequest(Request r);
 static int serverFd = -1, dummyFd = -1, clientFd = -1;
 
