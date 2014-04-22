@@ -15,7 +15,7 @@ Response execRequest(Request r);
 
 struct sigaction sig;
 Request req;
-Response res;
+Response resp;
 
 int main(void){
 
@@ -32,51 +32,40 @@ int main(void){
      	}
      	fclose(file);
 
-	initialize_sigactions();
+	//signal(SIGINT,
+	
+
+	//no signals masked
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags=0;
+	sig.sa_handler=sig_usr1_handler;
+	sigaction(SIGUSR1,&sig,NULL);
 
 	while(1){
-
-		if(sigaction(SIGUSR1,&sig,NULL)==-1){
-			printf("error\n");
-		}
-
 	}
 
 }
 
-void sig_handler(void){
+void sig_usr1_handler(void){
 	sigset_t signal_set;
 	sigemptyset(&signal_set);
 	sigaddset(&signal_set,SIGUSR1);
 	sigaddset(&signal_set,SIGUSR2);
 
-	printf("in signal handler\n");
-	//bloquear las demas seniales
 	if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
 		printf("error blocking signals\n");
 	}
 
-	//llamar a read messages hasta que este vacio
-
-	//while(
 	read_client_messages();
-		//si devuelve cero es que no hay mensajes para leer
-	//};
-	printf("con seniales bloqueadas\n");
-	sleep(20);
-
-	//desbloquear las seniales
-
+	
 	if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
 		printf("error unblocking signals\n");
 	}
-	printf("seniales desbloqueadas\n");
 }
 
 void read_client_messages(void){
+	
 	char clientFile[CLIENT_FILE_NAME_LEN];
-
-	printf("reading messages\n");
 
 	DIR *dirp;
 	struct dirent *direntp;
@@ -85,9 +74,6 @@ void read_client_messages(void){
 	}
 	while((direntp=readdir(dirp))!=NULL){
 		if(direntp->d_name[0] != '.'){
-			//decidir que comando tiene que ejecutar
-			printf("ejecutar comando\n");
-			
 			strncpy(clientFile,CTOS_PATH,CLIENT_FILE_NAME_LEN);
 			strcat(clientFile,"/");
 			strcat(clientFile,direntp->d_name);
@@ -105,20 +91,56 @@ void read_client_messages(void){
 				}
 				printf("%d movie id\n",req.movieID);
 				fclose(file);
-				//res= execRequest(req);
+				if(remove(clientFile)==-1){
+					printf("error while removing %s file\n",clientFile);
+				}
+				resp= execRequest(req);
+
+				strncpy(clientFile,STOC_PATH,CLIENT_FILE_NAME_LEN);
+				strcat(clientFile,"/");
+				strcat(clientFile,direntp->d_name);
+				printf("%s\n",clientFile);
+
+				create_server_file(clientFile);
+				server_communicate(req.pid);
+
 			}
-			//luego borrar el archivo que acaba de leer
 		}
 	}
 	closedir(dirp);
 }
 
-void initialize_sigactions(void){
-	//no signals masked
-	sigemptyset(&sig.sa_mask);
-	sig.sa_flags=0;
-	sig.sa_handler=sig_handler;
+void server_communicate(long clientpid){
+	int s;
+
+	s= kill(clientpid, SIGUSR2);
+
+	if(s==-1){
+		if(errno==EPERM)
+			printf("Server process exists, but we dont have permission to send it a signal\n");
+		else if(errno==ESRCH)
+			printf("Server process does not exist\n");
+		//fatal("kill");
+	}
+	if(s==0){
+		//el proceso existe y le podemos mandar una senial
+	}
+
 }
+
+void create_server_file(char * clientFile){
+	FILE *file=fopen(clientFile, "wb");
+	if(file==NULL){
+		printf("error while creating %s file\n",clientFile);
+		//fatal("fopen");
+	}
+	if(fwrite(&resp,sizeof(Response),1,file)==-1){
+		printf("error while writing %s file\n",clientFile);
+		//fatal("fwrite");
+	}
+	fclose(file);
+}
+
 
 
 Response execRequest(Request r){

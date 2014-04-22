@@ -9,3 +9,4 @@ default:
 	cd fifos; make
 	cd shm-sem-POSIX; make
 	cd mqueues-POSIX; make
+	cd files-signals; make

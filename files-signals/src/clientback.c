@@ -23,6 +23,9 @@
 static Request req;
 static Response resp;
 static char clientFile[CLIENT_FILE_NAME_LEN];
+int server_int=0;
+
+struct sigaction sig;
 
 void
 initializeClient(){
@@ -32,11 +35,57 @@ initializeClient(){
                 (long) getpid());
 	signal(SIGINT, onSigInt);
 
+	//no signals masked
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags=0;
+	sig.sa_handler=sig_usr2_handler;
+
+}
+
+
+void sig_usr2_handler(void){
+
+	server_int=1;
+
+	sigset_t signal_set;
+	sigemptyset(&signal_set);
+	sigaddset(&signal_set,SIGUSR1);
+	sigaddset(&signal_set,SIGUSR2);
+
+	if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
+		printf("error blocking signals\n");
+	}
+
+	snprintf(clientFile, SERVER_FILE_NAME_LEN, SERVER_FILE_TEMPLATE,
+                (long) getpid());
+
+	FILE * file=fopen(clientFile,"rb");
+	if(file==NULL){
+		printf("error while opening %s file\n",clientFile);				
+		//fatal("fopen");
+	}
+	else{
+		if(fread(&resp,sizeof(Response),1,file)==-1){
+		printf("error while reading from %s file\n",clientFile);
+		}
+
+		fclose(file);
+		
+		if(remove(clientFile)==-1){
+			printf("error while removing %s file\n",clientFile);
+		}
+	}
+	
+	if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
+		printf("error unblocking signals\n");
+	}
+
 }
 
 void
 terminateClient(void){
-   return;
+    int exit_status = EXIT_SUCCESS;
+    exit(exit_status);
 }
 
 void onSigInt(int sig){
@@ -46,13 +95,19 @@ void onSigInt(int sig){
 
 int
 cancel_seat(Client c, int movieID, int seat){
-return 0;
-}
+ 	req.comm = CANCEL_SEAT;
+    req.movieID = movieID;
+    req.seat = seat;
 
+	create_client_file();
+    communicate();
+	sigaction(SIGUSR2,&sig,NULL);
+	
+	while(!server_int){
+	}
 
-int
-reserve_seat(Client c, int movieID, int seat){
-return 0;
+	server_int=0;
+    return resp.ret;
 }
 
 
@@ -63,18 +118,26 @@ get_movies_list(char *movies[10][60]){
 
 Movie
 get_movie(int movieID){
-	Movie m;
 
 	req.comm = GET_MOVIE;
     req.movieID = movieID;
 
 	create_client_file();
     communicate();
+	sigaction(SIGUSR2,&sig,NULL);
+	
+	while(!server_int){
+	}
 
-    return m;
+	server_int=0;
+    return resp.m;
 }
 
 void create_client_file(void){
+
+	snprintf(clientFile, CLIENT_FILE_NAME_LEN, CLIENT_FILE_TEMPLATE,
+                (long) getpid());
+	printf("%s\n",clientFile);
 	FILE *file=fopen(clientFile, "wb");
 	if(file==NULL){
 		printf("error while creating %s file\n",clientFile);
@@ -110,9 +173,26 @@ void communicate(void){
 		fatal("kill");
 	}
 	if(s==0){
-		printf("server process exists and we can send signal\n");
 		//el proceso existe y le podemos mandar una senial
 	}
+}
+
+int
+reserve_seat(Client c, int movieID, int seat){
+    req.comm = RESERVE_SEAT;
+    req.client = c;
+    req.movieID = movieID;
+    req.seat = seat;
+
+	create_client_file();
+    communicate();
+
+	sigaction(SIGUSR2,&sig,NULL);
+	while(!server_int){
+	}
+
+	server_int=0;
+    return resp.ret;
 }
 
 void
