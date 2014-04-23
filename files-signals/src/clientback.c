@@ -53,36 +53,33 @@ sig_usr2_handler(void){
     sigaddset(&signal_set,SIGUSR2);
 
 	if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
-		printf("error blocking signals\n");
-		fatal("block");
+		fatal("error blocking signals");
 	}
 
     snprintf(clientFile, SERVER_FILE_NAME_LEN, SERVER_FILE_TEMPLATE,
             (long) getpid());
 
-
 	FILE * file=fopen(clientFile,"rb");
 	if(file==NULL){
 		printf("error while opening %s file\n",clientFile);				
-		fatal("fopen");
+		exit(EXIT_FAILURE);
 	}
 	else{
 		if(fread(&resp,sizeof(Response),1,file)==-1){
 			printf("error while reading from %s file\n",clientFile);
-			fatal("fread");
+			exit(EXIT_FAILURE);
 		}
 
 		fclose(file);
 		
 		if(remove(clientFile)==-1){
 			printf("error while removing %s file\n",clientFile);
-			fatal("remove");
+			exit(EXIT_FAILURE);
 		}
 	}
 	
 	if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
-		printf("error unblocking signals\n");
-		fatal("unblock");
+		fatal("error unblocking signals");
 	}
 
 }
@@ -90,6 +87,14 @@ sig_usr2_handler(void){
 void
 terminateClient(void){
     int exit_status = EXIT_SUCCESS;
+	snprintf(clientFile, CLIENT_FILE_NAME_LEN, CLIENT_FILE_TEMPLATE,
+            (long) getpid());
+	FILE * file=fopen(clientFile,"rb");
+	if(file!=NULL){
+		if(remove(clientFile)==-1){
+			exit_status=EXIT_FAILURE;
+		}
+	}
     exit(exit_status);
 }
 
@@ -146,11 +151,11 @@ create_client_file(void){
 	FILE *file=fopen(clientFile, "wb");
 	if(file==NULL){
 		printf("error while creating %s file\n",clientFile);
-		fatal("fopen");
+		exit(EXIT_FAILURE);
 	}
 	if(fwrite(&req,sizeof(Request),1,file)==-1){
 		printf("error while writing %s file\n",clientFile);
-		fatal("fwrite");
+		exit(EXIT_FAILURE);
 	}
 	fclose(file);
 
@@ -177,7 +182,7 @@ communicate(void){
             printf("Server process exists, but we dont have permission to send it a signal\n");
         else if(errno==ESRCH)
             printf("Server process does not exist\n");
-        fatal("kill");
+       	terminateClient();
     }
     if(s==0){
         //el proceso existe y le podemos mandar una senial

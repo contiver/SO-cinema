@@ -57,15 +57,13 @@ sig_usr1_handler(void){
     sigaddset(&signal_set,SIGUSR2);
 
     if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
-        printf("error blocking signals\n");
-        exit(EXIT_FAILURE);
+       fatal("error blocking signals");
     }
 
     read_client_messages();
 
     if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
-        printf("error unblocking signals\n");
-        exit(EXIT_FAILURE);
+        fatal("error unblocking signals");
     }
 }
 
@@ -76,8 +74,7 @@ read_client_messages(void){
     struct dirent *direntp;
 
     if((dirp= opendir(CTOS_PATH))==NULL){
-        printf("error opening ctos directory\n");
-        exit(EXIT_FAILURE);
+        fatal("error opening ctos directory\n");
     }
     while((direntp=readdir(dirp))!=NULL){
         if(direntp->d_name[0] == '.'){
@@ -98,9 +95,10 @@ read_client_messages(void){
             printf("Error while reading from %s file\n",clientFile);
             exit(EXIT_FAILURE);
         }
-        printf("%d movie id\n",req.movieID);
+        //printf("%d movie id\n",req.movieID);
         fclose(file);
-        if(remove(clientFile)==-1){
+        
+		if(remove(clientFile)==-1){
             printf("error while removing %s file\n",clientFile);
             exit(EXIT_FAILURE);
         }
@@ -112,12 +110,17 @@ read_client_messages(void){
         printf("%s\n",clientFile);
 
         create_server_file(clientFile);
-        server_communicate(req.pid);
+        if(server_communicate(req.pid)==-1){
+			if(remove(clientFile)==-1){
+				printf("error while removing %s file\n",clientFile);
+            	exit(EXIT_FAILURE);
+			}
+		}
     }
     closedir(dirp);
 }
 
-void
+int
 server_communicate(long clientpid){
     int s;
 
@@ -125,14 +128,15 @@ server_communicate(long clientpid){
 
     if(s==-1){
         if(errno==EPERM)
-            printf("Server process exists, but we dont have permission to send it a signal\n");
+            printf("Client process exists, but we dont have permission to send it a signal\n");
         else if(errno==ESRCH)
-            printf("Server process does not exist\n");
-        exit(EXIT_FAILURE);
+            printf("Client process does not exist\n");
+		return -1;        
     }
     if(s==0){
         //el proceso existe y le podemos mandar una senial
-    }
+    	return 0;
+	}
 
 }
 
@@ -172,4 +176,10 @@ execRequest(Request r){
             break;
     }
     return resp;
+}
+
+void
+fatal(char *s){
+    perror(s);
+    exit(EXIT_FAILURE);
 }

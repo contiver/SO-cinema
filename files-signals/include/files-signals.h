@@ -20,7 +20,7 @@ void create_client_file(void);
 void onSigInt(int sig);
 void get_answer(void);
 
-void server_communicate(long clientpid);
+int server_communicate(long clientpid);
 void create_server_file(char * clientFile);
 
 //Response execRequest(Request r);
