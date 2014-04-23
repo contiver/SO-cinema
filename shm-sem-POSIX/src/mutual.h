@@ -15,11 +15,20 @@
 void fatal(char *s);
 void *getmem(void);
 void initmutex(void);
+/*
+ * SIGINT handler
+ */
+void onSigInt(int sig);
+
+/**
+ * Close open semaphores before calling exit()
+ */
+void terminateClient(void);
 
 /**
  * Close open semaphores and unlink them before calling exit()
  */
-void terminate(void);
+void terminateServer(void);
 
 void enter1(void);
 void enter2(void);

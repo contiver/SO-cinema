@@ -14,11 +14,6 @@ fatal(char *s){
     exit(EXIT_FAILURE);
 }
 
-void
-onSigInt(int sig){
-    terminate();
-}
-
 
 void *
 getmem(void){
@@ -48,11 +43,10 @@ initmutex(void){
         fatal("sem_open");
     if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
-    signal(SIGINT, onSigInt);
 }
 
 void
-terminate(void){
+terminateServer(void){
     int exit_status = EXIT_SUCCESS;
     if(sem_close(s1) != 0) exit_status = EXIT_FAILURE;
     if(sem_close(s2) != 0) exit_status = EXIT_FAILURE;
@@ -60,6 +54,15 @@ terminate(void){
     if(sem_unlink("/mutex1") != 0); exit_status = EXIT_FAILURE;
     if(sem_unlink("/mutex2") != 0); exit_status = EXIT_FAILURE;
     if(sem_unlink("/mutex3") != 0); exit_status = EXIT_FAILURE;
+    exit(exit_status);
+}
+
+void
+terminateClient(void){
+    int exit_status = EXIT_SUCCESS;
+    if(sem_close(s1) != 0) exit_status = EXIT_FAILURE;
+    if(sem_close(s2) != 0) exit_status = EXIT_FAILURE;
+    if(sem_close(s3) != 0) exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 

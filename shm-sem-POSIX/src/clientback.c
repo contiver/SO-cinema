@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include "mutual.h"
 #include "../../common/clientback.h"
 #include "../../common/shared.h"
@@ -13,12 +14,13 @@ initializeClient(void){
     req = (Request *)getmem();
     resp = malloc(sizeof(Response));
     initmutex();
+    signal(SIGINT, onSigInt);
     return;
 }
 
 void
-terminateClient(void){
-    terminate();
+onSigInt(int sig){
+    terminateClient();
 }
 
 Movie

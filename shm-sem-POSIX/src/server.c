@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
-#include <stdbool.h>
 #include <sys/stat.h>
 #include "../../common/ipc.h"
 #include "../../common/shared.h"
@@ -13,22 +12,28 @@ static Request *req;
 static Response *resp;
 
 int
-main(int argc, char *argv[]){
-    req = (Request *)getmem(); // Request is bigger than Response
+main(void){
+    req = (Request *)getmem();
     memset(req, 0, SIZE);
-    // Interpret same memory area as a Response rather than a Request
-    resp = (Response *) req; 
+    resp = (Response *)req; 
 
     initmutex();
+    signal(SIGINT, onSigInt);
     // Start with semaphores 2 and 3 in 0 (down)
     enter2();
     enter3();
 
-    while( true ){
+    for(;;){
         enter2();
         execRequest(*req);
         leave3();
     }
+    return 0;
+}
+
+void
+onSigInt(int sig){
+    terminateServer();
 }
 
 void
