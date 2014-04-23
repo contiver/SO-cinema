@@ -54,6 +54,7 @@ void sig_usr2_handler(void){
 
 	if(sigprocmask(SIG_BLOCK,&signal_set,NULL)==-1){
 		printf("error blocking signals\n");
+		fatal("block");s
 	}
 
 	snprintf(clientFile, SERVER_FILE_NAME_LEN, SERVER_FILE_TEMPLATE,
@@ -62,22 +63,25 @@ void sig_usr2_handler(void){
 	FILE * file=fopen(clientFile,"rb");
 	if(file==NULL){
 		printf("error while opening %s file\n",clientFile);				
-		//fatal("fopen");
+		fatal("fopen");
 	}
 	else{
 		if(fread(&resp,sizeof(Response),1,file)==-1){
-		printf("error while reading from %s file\n",clientFile);
+			printf("error while reading from %s file\n",clientFile);
+			fatal("fread");
 		}
 
 		fclose(file);
 		
 		if(remove(clientFile)==-1){
 			printf("error while removing %s file\n",clientFile);
+			fatal("remove");
 		}
 	}
 	
 	if(sigprocmask(SIG_UNBLOCK,&signal_set,NULL)==-1){
 		printf("error unblocking signals\n");
+		fatal("unblock");
 	}
 
 }
@@ -137,7 +141,6 @@ void create_client_file(void){
 
 	snprintf(clientFile, CLIENT_FILE_NAME_LEN, CLIENT_FILE_TEMPLATE,
                 (long) getpid());
-	printf("%s\n",clientFile);
 	FILE *file=fopen(clientFile, "wb");
 	if(file==NULL){
 		printf("error while creating %s file\n",clientFile);
@@ -158,7 +161,7 @@ void communicate(void){
 	FILE *file = fopen(SERVER_FILE_PID, "rb");
    	if ( file == NULL ){
 		printf("error while opening server_pid file\n");
-        exit(1);
+        fatal("fopen");
     }
 	fread(&serverpid,sizeof(serverpid),1,file);
 	fclose(file);
