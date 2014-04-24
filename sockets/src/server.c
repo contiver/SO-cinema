@@ -3,70 +3,62 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "../include/fifo.h"
+#include "mutual.h"
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 
+#define BACKLOG 5
+
 void onSigInt(int sig);
+Response execRequest(Request r);
+
 Request req;
 Response resp; 
-Response execRequest(Request r);
-static int serverFd = -1, dummyFd = -1, clientFd = -1;
+static int sfd = -1, cfd = -1;
 
-int main(int argc, char *argv[]){
-    char clientFifo[CLIENT_FIFO_NAME_LEN];
-    
-    if(mkfifo(SERVER_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1
-            && errno != EEXIST){
-        printf("error creating server fifo");
-        exit(EXIT_FAILURE);
-    }
-    
+void
+fatal(char *s){
+    perror(s);
+    exit(EXIT_FAILURE);
+}
+
+int
+main(int argc, char *argv[]){
+    struct sockaddr_un addr;
+
+    if( (sfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 )
+        fatal("socket");
+
     signal(SIGINT, onSigInt);
-    
-    serverFd = open(SERVER_FIFO, O_RDONLY);
-    if(serverFd == -1){
-        printf("error opening the server fifo\n");
-        exit(EXIT_FAILURE);
-    }
 
-    /* Open an extra write descriptor, so that we never see EOF */
-    dummyFd = open(SERVER_FIFO, O_WRONLY);
-    if(dummyFd == -1){
-        printf("error opening dummy fifo\n");
-        exit(EXIT_FAILURE);
-    }
+    if(remove(SV_SOCKET_PATH) == -1 && errno != ENOENT)
+        //errExit("remove-%s", SV_SOCKET_PATH);
+        
+    memset(&addr, 0, sizeof(struct sockaddr_un)); /* Clear structure */
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, SV_SOCKET_PATH, sizeof(addr.sun_path) - 1);
 
-    /* Ignore the SIGPIPE signal, so that if the server attempts to write to a 
-     * client FIFO that doesn't have a reader, then rather than being sent a 
-     * SIGPIPE signal which kills it by default, it receives an EPIPE error
-     * from the write() syscall */
-    if(signal(SIGPIPE, SIG_IGN) == SIG_ERR){
-        exit(EXIT_FAILURE);
-    }
+    if( bind(sfd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un)) == -1 )
+        fatal("bind");
+    if( listen(sfd, BACKLOG) == -1 ) 
+        fatal("listen");
 
     for(;;){
-        if(read(serverFd, &req, sizeof(Request)) != sizeof(Request)){
-            fprintf(stderr, "Error reading request' discarding\n");    
-            continue;
-        } 
-        
-        snprintf(clientFifo, CLIENT_FIFO_NAME_LEN, CLIENT_FIFO_TEMPLATE,
-                (long) req.pid);
-        clientFd = open(clientFifo, O_WRONLY);
-        if(clientFd == -1){
-            printf("couldn't open %s", clientFifo);
-            continue;
+        if( (cfd = accept(sfd, NULL, NULL)) == -1 ){
+            perror("accept");        
+            continue; // Ver si esto esta bien!
         }
 
-        int n;
-        /*Send responde and close FIFO */
+        if( read(cfd, &req, sizeof(Request)) != sizeof(Request) )
+            perror("read");
         resp = execRequest(req);
-        if((n =write(clientFd, &resp, sizeof(Response))) != sizeof(Response))
-            fprintf(stderr, "Error writing to FIFO %s; %d\n", clientFifo, n);
-        if(close(clientFd) == -1){
-           printf("error closing FIFO %s\n", clientFifo); 
+
+        if( write(cfd, &resp, sizeof(Response)) != sizeof(Response) )
+            perror("Couldn't write response to cfd");
+
+        if(close(cfd) == -1){
+            perror("Couldn't close cfd. Ignoring...");
         }
     }
 }
@@ -74,14 +66,14 @@ int main(int argc, char *argv[]){
 void
 onSigInt(int sig){
     int exit_status = EXIT_SUCCESS;
-    if(clientFd != -1 && close(clientFd) != 0) exit_status = EXIT_FAILURE;
-    if(dummyFd != -1 && close(dummyFd) != 0) exit_status = EXIT_FAILURE;
-    if(serverFd != -1 && close(serverFd) != 0) exit_status = EXIT_FAILURE;
-    if(unlink(SERVER_FIFO) != 0) exit_status = EXIT_FAILURE;
+    if( cfd != -1 && close(cfd) != 0 ) exit_status = EXIT_FAILURE;
+    if( sfd != -1 && close(sfd) != 0 ) exit_status = EXIT_FAILURE;
+    if( remove(SV_SOCKET_PATH) != 0 ) exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 
-Response execRequest(Request r){
+Response
+execRequest(Request r){
     Response resp;
 
     switch(r.comm){
@@ -95,7 +87,7 @@ Response execRequest(Request r){
             resp.m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            //TODO IMPLEMENTAR
+            resp.matrix = get_movies_list();
             break;
         case TEST_CONNECTION:
             resp.ret = 0;

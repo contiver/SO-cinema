@@ -39,9 +39,9 @@ void
 initmutex(void){
     if( !(s1 = sem_open("/mutex1", O_RDWR|O_CREAT, 0666, 1)) )
         fatal("sem_open");
-    if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 1)) )
+    if ( !(s2 = sem_open("/mutex2", O_RDWR|O_CREAT, 0666, 0)) )
         fatal("sem_open");
-    if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 1)) )
+    if ( !(s3 = sem_open("/mutex3", O_RDWR|O_CREAT, 0666, 0)) )
         fatal("sem_open");
 }
 

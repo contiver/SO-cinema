@@ -60,11 +60,10 @@ int main(int argc, char *argv[]){
             continue;
         }
 
-        int n;
         /*Send responde and close FIFO */
         resp = execRequest(req);
-        if((n =write(clientFd, &resp, sizeof(Response))) != sizeof(Response))
-            fprintf(stderr, "Error writing to FIFO %s; %d\n", clientFifo, n);
+        if( write(clientFd, &resp, sizeof(Response)) != sizeof(Response) )
+            printf("Error writing to FIFO %s", clientFifo);
         if(close(clientFd) == -1){
            printf("error closing FIFO %s\n", clientFifo); 
         }
