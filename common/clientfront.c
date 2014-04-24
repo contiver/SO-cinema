@@ -123,20 +123,21 @@ void buy_ticket(Client c){
 }
 
 void list_movies(void){
-    int code = 1, i = 0, error;
-    char movies[10][60];
-    if ( (error = get_movies_list(&movies)) != 0){
-        switch( error ){
+    int code = 1, i = 0;//, error;
+    //char movies[10][60];
+    Matrix movies;
+    movies = get_movies_list();
+    /*    switch( error ){
             case -1: printf("ListMovies file not found in database\n");
                      break;
             case -2: printf("Error reading from file\n"); 
                      break;
         }
 	return;
-    }
+    }*/
     printf("------------------------------------------------------------\n");
     for(i = 0; i < 10; i++){
-        printf("%s\t\tCode:%d\n",movies[i],code++);
+        printf("%s\t\tCode:%d\n",movies.m[i],code++);
     }
     printf("------------------------------------------------------------\n");
 }

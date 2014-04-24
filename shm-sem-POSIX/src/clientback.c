@@ -35,9 +35,15 @@ get_movie(int movieID){
     return resp->m;
 }
 
-int
-get_movies_list(char *movies[10][60]){
-	return 0; // IMPLEMENTAR !!
+Matrix
+get_movies_list(void){
+    enter1();
+    req->comm = MOVIE_LIST;
+    leave2();
+    enter3();
+    memcpy(resp, req, sizeof(Response));
+    leave1();
+	return resp->matrix;
 }
 
 int

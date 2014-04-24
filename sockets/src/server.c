@@ -95,7 +95,7 @@ Response execRequest(Request r){
             resp.m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            resp.matrix = get_movies_list();
+            //TODO IMPLEMENTAR
             break;
         case TEST_CONNECTION:
             resp.ret = 0;

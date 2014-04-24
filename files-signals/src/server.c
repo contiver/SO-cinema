@@ -50,7 +50,7 @@ onSigInt(int sig){
 }
 
 void
-sig_usr1_handler(void){
+sig_usr1_handler(int s){
     sigset_t signal_set;
     sigemptyset(&signal_set);
     sigaddset(&signal_set,SIGUSR1);
@@ -165,7 +165,7 @@ execRequest(Request r){
             resp.m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            //TODO IMPLEMENTAR
+            resp.matrix = get_movies_list();
             break;
         case TEST_CONNECTION:
             resp.ret = 0;

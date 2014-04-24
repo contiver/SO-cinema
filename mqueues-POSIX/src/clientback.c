@@ -24,7 +24,7 @@ void
 fatal(char *s)
 {
     perror(s);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void
@@ -64,7 +64,6 @@ terminateClient(void){
 
 Movie
 get_movie(int movieID){
-    printf("El mtype dentro de getmovie es: %ld\n", reqMsg.mtype);
     reqMsg.req.comm = GET_MOVIE;
     reqMsg.req.movieID = movieID;
     mq_send(qout, &reqMsg, sizeof(ReqMsg), 0);
@@ -72,9 +71,12 @@ get_movie(int movieID){
     return respMsg.resp.m;
 }
 
-int
-get_movies_list(char *movies[10][60]){
-    return 0; // IMPLEMENTAR !!
+Matrix
+get_movies_list(void){
+    reqMsg.req.comm = MOVIE_LIST;
+    mq_send(qout, &reqMsg, sizeof(ReqMsg), 0);
+    mq_receive(qin, &respMsg, sizeof(RespMsg), NULL);
+    return respMsg.resp.matrix;
 }
 
 int

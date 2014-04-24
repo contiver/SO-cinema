@@ -26,7 +26,7 @@ Movie get_movie(int movieID);
  * @param movieID 
  * @return The movie identified by the movieID
  */
-int get_movies_list(char *movies[10][60]);
+Matrix get_movies_list(void);
 
 /**
  * @param c client making the request

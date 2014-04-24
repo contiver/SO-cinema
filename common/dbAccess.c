@@ -98,14 +98,16 @@ reserve_seat(Client c, int movieID, int seat){
     return 0; //reserva ok
 }
 
-int
-get_movies_list(char *movies_list[10][60]){
-    //char movie_list[10][60];
+Matrix
+get_movies_list(){
+    Matrix m;
     FILE *file = fopen(MLIST_PATH, "rb");
+    /*
     if( file == NULL ) return -1;
     if( fread(movies_list, sizeof(char[10][60]), 1, file) != 1) return -2;
-    
-    return 0;
+   */ 
+    fread(&m, sizeof(Matrix), 1, file);
+    return m;
 }
 
 int

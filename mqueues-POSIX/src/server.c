@@ -58,7 +58,7 @@ execRequest(void){
             respMsg.resp.m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            //TODO IMPLEMENTAR
+            respMsg.resp.matrix = get_movies_list();
             break;
         case TEST_CONNECTION:
             respMsg.resp.ret= 0;

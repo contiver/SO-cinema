@@ -4,6 +4,11 @@
 #define MAX_LENGTH 40
 #define MAX_NAME_LENGTH 30
 #define STD_SEAT_QTY 60
+
+typedef struct{
+    char m[10][60];
+} Matrix;
+
 typedef struct{
     char email[MAX_LENGTH];
     char pw[MAX_LENGTH];
