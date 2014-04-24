@@ -14,6 +14,8 @@
 #define SERVER_NAME "/serv_queue"
 #define CLIENT_NAME_TEMPLATE "/client_%ld_queue"
 
+void onSigInt(int sig);
+
 typedef struct {
     long mtype;
     Request req;
