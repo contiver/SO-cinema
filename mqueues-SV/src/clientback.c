@@ -11,11 +11,11 @@
 #include "../../common/clientback.h"
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
- 
+
+
 static ReqMsg reqMsg;
 static RespMsg respMsg;
-static char cltname[100];
-static mqd_t qin, qout;
+static int msqin =-1,msqout=-1;
 void communicate(void);
  
 void
@@ -35,30 +35,24 @@ initializeClient(void){
     signal(SIGINT, onSigInt);
     reqMsg.mtype = (long) getpid();
 
-    struct mq_attr respAttr;
-    respAttr.mq_maxmsg = 10;
-    respAttr.mq_msgsize = sizeof(RespMsg);
+	msqin= msgget(SERVER_KEY, IPC_CREAT | S_IRUSR);
+	if(msqin==-1)
+		fatal("msgget");
 
-    struct mq_attr reqAttr;
-    reqAttr.mq_maxmsg = 10;
-    reqAttr.mq_msgsize = sizeof(ReqMsg);
-
-    sprintf( cltname, CLIENT_NAME_TEMPLATE, (long)getpid() );
-    printf("cltname = %s\n", cltname);
-    if ( (qin = mq_open(cltname, O_RDONLY|O_CREAT, 0666, &respAttr)) == -1 )
-        fatal("Error mq_open qin");
-    if ( (qout = mq_open(SERVER_NAME, O_WRONLY|O_CREAT, 0666, &reqAttr)) == -1 )
-        fatal("Error mq_open qout");
-    return;
+	msqout= msgget(CLIENTS_KEY, IPC_CREAT | S_IWUSR);
+	if(msqout==-1)
+		fatal("msgget");
+	
 }
 
 void
 terminateClient(void){
-    int exit_status = EXIT_SUCCESS;
-    if( mq_close(qin) == -1) exit_status = EXIT_FAILURE;
-    if( mq_close(qout) == -1) exit_status = EXIT_FAILURE; 
-    if( mq_unlink(cltname) == -1) exit_status = EXIT_FAILURE;
-    exit(exit_status);
+	exit(EXIT_SUCCESS);
+    //int exit_status = EXIT_SUCCESS;
+    //if( mq_close(qin) == -1) exit_status = EXIT_FAILURE;
+    //if( mq_close(qout) == -1) exit_status = EXIT_FAILURE; 
+   // if( mq_unlink(cltname) == -1) exit_status = EXIT_FAILURE;
+ //   exit(exit_status);
 }
 
 Movie
@@ -97,6 +91,11 @@ reserve_seat(Client c, int movieID, int seat){
 
 void
 communicate(void){
-    mq_send(qout, (char *)&reqMsg, sizeof(ReqMsg), 0);
-    mq_receive(qin, (char *)&respMsg, sizeof(RespMsg), NULL);
+
+	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), IPC_NOWAIT)==-1){
+		printf("error msgsnd\n");
+	}
+	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), IPC_NOWAIT)==-1){
+		printf("error msgrcv\n");
+	}
 }

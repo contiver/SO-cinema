@@ -5,66 +5,47 @@
 void terminateServer(int sig);
 void execRequest(void);
 
+
+static ReqMsg reqMsg;
+static RespMsg respMsg;
+static int msqin =-1,msqout=-1;
 void
 fatal(char *s)
 {
     perror(s);
     exit(EXIT_FAILURE);
 }
-
-static ReqMsg reqMsg;
-static RespMsg respMsg;
-static int msqid =-1,msqout=-1;
  
 int
 main(void){
-	int msqin, msqout;
-	key_t req_key= ftok(PATH,'x');
-	if(req_key==-1){
-		fatal("ftok");
-	}
-	msqin= msgget(req_key IPC_CREAT | S_IRUSR);
+	signal(SIGINT, terminateServer);
+
+	msqin= msgget(CLIENTS_KEY, IPC_CREAT | S_IRUSR);
+	if(msqin==-1)
+		fatal("msgget");
+
+	msqout= msgget(SERVER_KEY, IPC_CREAT | S_IWUSR);
+	if(msqout==-1)
+		fatal("msgget");
 	
-
-
-
-
-/*
-    char cltname[100];
-    
-    signal(SIGINT, terminateServer);
-   
-    struct mq_attr reqAttr;
-    reqAttr.mq_maxmsg = 10;
-    reqAttr.mq_msgsize = sizeof(ReqMsg);
-    
-    if ( (msqid = msgget(IPC_PRIVATE, IPC_CREAT | 0666) == -1  )
-        fatal("Error msgget");
-
-
-         
-    for(;;){
-        msgrcv(msqid, (char *)&reqMsg, sizeof(reqMsg), 0, IPC_NOWAIT);
-        execRequest(); 
-        sprintf(cltname, CLIENT_NAME_TEMPLATE, reqMsg.mtype);
-        if ( (msqout = msgget(cltname, O_WRONLY)) == -1 ){
-            perror("Error mq_open qout");
-            continue;
-        }
-        msgsend(msqout, (char *)&respMsg, sizeof(RespMsg), IPC_NOWAIT);
-        if(mq_close(qout) == -1)
-            printf("Error closing qout descriptor. Ignoring...\n");
-    }*/
+	for(;;){
+		if(msgrcv(msqin, (char *)&reqMsg , sizeof(reqMsg), 0, IPC_NOWAIT)==-1){
+		printf("error msgrcv\n");
+		}
+		execRequest();
+		respMsg.mtype=reqMsg.mtype;
+		if(msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), IPC_NOWAIT)==-1){
+		printf("error msgsnd\n");
+		}
+	}
 }
+
 
 void
 terminateServer(int sig){
     int exit_status = EXIT_SUCCESS;
-    if( qin != -1 ){
-        if( mq_close(qin) == -1 ) exit_status = EXIT_FAILURE;
-        if( mq_unlink(SERVER_NAME) == -1 ) exit_status = EXIT_FAILURE;
-    }
-    if( qout != -1 && mq_close(qout) == -1 ) exit_status = EXIT_FAILURE;
+    if( msqin != -1 && msgctl(msqin,IPC_RMID,NULL) == -1 ) exit_status = EXIT_FAILURE;
+    if( msqout != -1 && msgctl(msqout,IPC_RMID,NULL) == -1 ) exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 

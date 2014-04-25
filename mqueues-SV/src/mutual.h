@@ -12,8 +12,8 @@
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
 
-#define SERVER_NAME "/serv_queue"
-#define CLIENT_NAME_TEMPLATE "/client_%ld_queue"
+#define SERVER_KEY ftok("/mqueues-SV/server", 0)
+#define CLIENTS_KEY ftok("/mqueues-SV/clients", 0)
 
 void onSigInt(int sig);
 
