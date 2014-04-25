@@ -20,8 +20,8 @@ main(void){
     initmutex();
     signal(SIGINT, onSigInt);
     // Start with semaphores 2 and 3 in 0 (down)
-   // enter2();
-  //  enter3();
+  //  enter2();
+   // enter3();
 
     for(;;){
         enter2();
@@ -49,7 +49,7 @@ execRequest(Request r){
             resp->m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            //TODO IMPLEMENTAR
+            resp->matrix = get_movies_list(); 
             break;
         case TEST_CONNECTION:
             resp->ret = 0;

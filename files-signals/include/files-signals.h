@@ -13,9 +13,9 @@ void fatal(char *s);
 
 
 void read_client_messages(void);
-void sig_usr1_handler(void);
+void sig_usr1_handler(int s);
 
-void sig_usr2_handler(void);
+void sig_usr2_handler(int s);
 void create_client_file(void);
 void onSigInt(int sig);
 void get_answer(void);

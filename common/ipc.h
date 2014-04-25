@@ -2,6 +2,7 @@
 #define IPC_H
 #include <sys/types.h> 
 #include "shared.h"
+
 typedef enum{RESERVE_SEAT, CANCEL_SEAT, GET_MOVIE, MOVIE_LIST, TEST_CONNECTION} command;
 
 typedef struct  {
@@ -15,6 +16,7 @@ typedef struct  {
 typedef struct  {
     int ret;  // Value to interpret depending of what the client requested
     Movie m;
+    Matrix matrix;
 } Response;
 
 #endif

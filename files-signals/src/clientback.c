@@ -43,7 +43,7 @@ initializeClient(){
 }
 
 void
-sig_usr2_handler(void){
+sig_usr2_handler(int s){
 
     server_int=1;
 
@@ -121,9 +121,20 @@ cancel_seat(Client c, int movieID, int seat){
 }
 
 
-int
-get_movies_list(char *movies[10][60]){
-    return 0; // IMPLEMENTAR !!
+Matrix
+get_movies_list(void){
+    req.comm = MOVIE_LIST;
+   
+    create_client_file();
+    communicate();
+    sigaction(SIGUSR2,&sig,NULL);
+
+    while(!server_int){
+    }
+
+    server_int=0;
+
+    return resp.matrix;
 }
 
 Movie

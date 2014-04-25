@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include "../../common/ipc.h"
 #include "../../common/dbAccess.h"
 #include "../../common/shared.h"
 #include "../include/fifo.h"
@@ -19,7 +20,6 @@ static char clientFifo[CLIENT_FIFO_NAME_LEN];
 static int serverFd = -1, clientFd = -1;
 static Request req;
 static Response resp;
-
 
 void
 fatal(char *s){
@@ -126,9 +126,11 @@ communicate(void){
     }
 }
 
-int
-get_movies_list(char *movies[10][60]){
-	return 0; // IMPLEMENTAR !!
+Matrix
+get_movies_list(void){
+    req.comm = MOVIE_LIST;
+    communicate();
+	return resp.matrix;
 }
 
 int

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -17,14 +16,13 @@ static ReqMsg reqMsg;
 static RespMsg respMsg;
 static char cltname[100];
 static mqd_t qin, qout;
-
-void onSigInt(int sig);
+void communicate(void);
  
 void
 fatal(char *s)
 {
     perror(s);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void
@@ -47,34 +45,35 @@ initializeClient(void){
 
     sprintf( cltname, CLIENT_NAME_TEMPLATE, (long)getpid() );
     printf("cltname = %s\n", cltname);
-    if ( (qin = mq_open(cltname, O_RDONLY|O_CREAT, 0666, &respAttr)) == -1  )
+    if ( (qin = mq_open(cltname, O_RDONLY|O_CREAT, 0666, &respAttr)) == -1 )
         fatal("Error mq_open qin");
-    if ( (qout = mq_open(SERVER_NAME, O_WRONLY|O_CREAT, 0666, &reqAttr)) == -1  )
+    if ( (qout = mq_open(SERVER_NAME, O_WRONLY|O_CREAT, 0666, &reqAttr)) == -1 )
         fatal("Error mq_open qout");
     return;
 }
 
 void
 terminateClient(void){
-    mq_close(qin);
-    mq_close(qout);
-    mq_unlink(cltname);
-    exit(EXIT_SUCCESS);
+    int exit_status = EXIT_SUCCESS;
+    if( mq_close(qin) == -1) exit_status = EXIT_FAILURE;
+    if( mq_close(qout) == -1) exit_status = EXIT_FAILURE; 
+    if( mq_unlink(cltname) == -1) exit_status = EXIT_FAILURE;
+    exit(exit_status);
 }
 
 Movie
 get_movie(int movieID){
-    printf("El mtype dentro de getmovie es: %ld\n", reqMsg.mtype);
     reqMsg.req.comm = GET_MOVIE;
     reqMsg.req.movieID = movieID;
-    mq_send(qout, &reqMsg, sizeof(ReqMsg), 0);
-    mq_receive(qin, &respMsg, sizeof(RespMsg), NULL);
+    communicate();
     return respMsg.resp.m;
 }
 
-int
-get_movies_list(char *movies[10][60]){
-    return 0; // IMPLEMENTAR !!
+Matrix
+get_movies_list(void){
+    reqMsg.req.comm = MOVIE_LIST;
+    communicate();
+    return respMsg.resp.matrix;
 }
 
 int
@@ -82,8 +81,7 @@ cancel_seat(Client c, int movieID, int seat){
     reqMsg.req.comm = CANCEL_SEAT;
     reqMsg.req.movieID = movieID;
     reqMsg.req.seat = seat;
-    mq_send(qout, &reqMsg, sizeof(ReqMsg), 0);
-    mq_receive(qin, &respMsg, sizeof(RespMsg), NULL);
+    communicate();
     return respMsg.resp.ret;
 }
 
@@ -93,7 +91,12 @@ reserve_seat(Client c, int movieID, int seat){
     reqMsg.req.client = c;
     reqMsg.req.movieID = movieID;
     reqMsg.req.seat = seat;
-    mq_send(qout, &reqMsg, sizeof(ReqMsg), 0);
-    mq_receive(qin, &respMsg, sizeof(RespMsg), NULL);
+    communicate();
     return respMsg.resp.ret;
+}
+
+void
+communicate(void){
+    mq_send(qout, (char *)&reqMsg, sizeof(ReqMsg), 0);
+    mq_receive(qin, (char *)&respMsg, sizeof(RespMsg), NULL);
 }
