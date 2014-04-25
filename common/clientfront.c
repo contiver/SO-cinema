@@ -14,7 +14,7 @@ main(void){
     Client c = login();
     initializeClient();
     while(true){
-        printf("\nPlease type the desired option: ");  
+        printf("\nPlease type the desired option: \n");  
         printf("ListMovies\nBuyMovie\nCancelMovie\nExit\n\n");
         scanf("%s",command);
         execute_command(command, c);
