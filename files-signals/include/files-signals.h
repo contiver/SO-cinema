@@ -22,5 +22,6 @@ void get_answer(void);
 
 int server_communicate(long clientpid);
 void create_server_file(char * clientFile);
+void communicate_with_server(void);
 
 //Response execRequest(Request r);

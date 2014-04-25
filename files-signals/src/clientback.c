@@ -23,7 +23,6 @@
 static Request req;
 static Response resp;
 static char clientFile[CLIENT_FILE_NAME_LEN];
-int server_int=0;
 
 struct sigaction sig;
 
@@ -44,8 +43,6 @@ initializeClient(){
 
 void
 sig_usr2_handler(int s){
-
-    server_int=1;
 
     sigset_t signal_set;
     sigemptyset(&signal_set);
@@ -109,14 +106,7 @@ cancel_seat(Client c, int movieID, int seat){
     req.movieID = movieID;
     req.seat = seat;
 
-    create_client_file();
-    communicate();
-    sigaction(SIGUSR2,&sig,NULL);
-
-    while(!server_int){
-    }
-
-    server_int=0;
+	communicate_with_server();
     return resp.ret;
 }
 
@@ -125,15 +115,7 @@ Matrix
 get_movies_list(void){
     req.comm = MOVIE_LIST;
    
-    create_client_file();
-    communicate();
-    sigaction(SIGUSR2,&sig,NULL);
-
-    while(!server_int){
-    }
-
-    server_int=0;
-
+	communicate_with_server();
     return resp.matrix;
 }
 
@@ -143,14 +125,7 @@ get_movie(int movieID){
     req.comm = GET_MOVIE;
     req.movieID = movieID;
 
-    create_client_file();
-    communicate();
-    sigaction(SIGUSR2,&sig,NULL);
-
-    while(!server_int){
-    }
-
-    server_int=0;
+	communicate_with_server();
     return resp.m;
 }
 
@@ -207,15 +182,25 @@ reserve_seat(Client c, int movieID, int seat){
     req.movieID = movieID;
     req.seat = seat;
 
-    create_client_file();
-    communicate();
-
-    sigaction(SIGUSR2,&sig,NULL);
-    while(!server_int){
-    }
-
-    server_int=0;
+	communicate_with_server();
     return resp.ret;
+}
+
+void 
+communicate_with_server(void){
+	sigset_t mask,oldmask;
+
+	create_client_file();
+    communicate();
+    sigaction(SIGUSR2,&sig,NULL);
+    
+	if(sigprocmask(SIG_BLOCK, &mask, &oldmask)==-1)
+		fatal("oldmask");
+	sigemptyset(&mask);
+	if(sigsuspend(&mask)==-1 && errno!= EINTR)
+		fatal("sigsuspend");
+	if(sigprocmask(SIG_SETMASK, &oldmask, NULL)==-1)
+		fatal("oldmask2");
 }
 
 void

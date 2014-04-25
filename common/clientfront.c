@@ -79,17 +79,29 @@ void cancel_ticket(Client c){
 }
 
 void buy_ticket(Client c){
-    int movieID, seat, aux = 1;
-    printf("Insert movie code:\n");
-    scanf("%d", &movieID);
+    int movieID, seat, aux = 1,aux1=1;
+	char buffer[1024];
+   
+	while(aux1){
+		printf("Insert movie code:\n");
+		fgets(buffer,sizeof(buffer),stdin);
+    	scanf("%d", &movieID);
+
+   		if(movieID>MOVIES_QTY || movieID<1){
+			printf("Invalid movie code\n");
+		}
+		else{
+			aux1=0;
+		}
+	}
 
     Movie m;
     m.name[0] = 0;
     m = get_movie(movieID);    
 
     if(m.name[0] == 0){
-        printf("Sorry, either the movie code is invalid, or an error\
-                has ocurred while trying to access the database\n");
+        printf("Sorry, an error has ocurred while trying\
+			 	to access the database\n");
         return;
     }
 
@@ -103,21 +115,21 @@ void buy_ticket(Client c){
         printf("%s %s\n", m.name, m.time);
         printSeats(m.th.seats);
 
-	char buf[1024];
-	fgets(buf,sizeof(buf),stdin);
+		char buf[1024];
+		fgets(buf,sizeof(buf),stdin);
 
-        if(scanf("%d", &seat)!=1){
-		aux = INVALID_SEAT;
-		printf("Invalid number of seat\n");
-	}
-	else{
+   		if(scanf("%d", &seat)!=1){
+			aux = INVALID_SEAT;
+			printf("Invalid number of seat\n");
+		}
+		else{
         	aux = reserve_seat(c, movieID, seat);
         	if( aux == SEAT_TAKEN ){
             	printf("Sorry, that seat is taken, please try with another one\n");
         	}else if(aux == INVALID_SEAT){
             	printf("Invalid number of seat\n");
         	}
-	}
+		}
     }
     printf("The purchase has been successful\n");
 }

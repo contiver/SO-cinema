@@ -14,6 +14,7 @@ get_movie(int movieID){
     Movie m;
     m.name[0] = 0;
     char movieName[MAX_NAME_LENGTH];
+
     sprintf(movieName, MOVIE_PATH, movieID);
 
     FILE *file = fopen(movieName, "rb+");

@@ -133,10 +133,7 @@ server_communicate(long clientpid){
             printf("Client process does not exist\n");
 		return -1;        
     }
-    if(s==0){
-        //el proceso existe y le podemos mandar una senial
-    	return 0;
-	}
+    return 0;
 
 }
 
