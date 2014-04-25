@@ -7,13 +7,14 @@
 #include "clientback.h"
 #include "dbAccess.h"
 
-int main(void){
+int
+main(void){
     char command[20]="";
     printf("\nWelcome to RetroMovies :)\n");
     Client c = login();
     initializeClient();
     while(true){
-        printf("\nPlease type the desired option:\n");  
+        printf("\nPlease type the desired option: ");  
         printf("ListMovies\nBuyMovie\nCancelMovie\nExit\n\n");
         scanf("%s",command);
         execute_command(command, c);
@@ -108,7 +109,7 @@ void buy_ticket(Client c){
 
         if(scanf("%d", &seat)!=1){
 		aux = INVALID_SEAT;
-		printf("Invalid number of seat\n");
+		printf( RED "Invalid number of seat\n" RESET);
 	}
 	else{
         	aux = reserve_seat(c, movieID, seat);
@@ -119,12 +120,12 @@ void buy_ticket(Client c){
         	}
 	}
     }
-    printf("The purchase has been successful\n");
+    printf(GREEN "The purchase has been successful\n" RESET);
 }
 
-void list_movies(void){
-    int code = 1, i = 0;//, error;
-    //char movies[10][60];
+void
+list_movies(void){
+    int code = 1, i = 0;
     Matrix movies;
     movies = get_movies_list();
     /*    switch( error ){

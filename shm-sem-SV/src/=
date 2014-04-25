@@ -8,7 +8,6 @@ void initmutex(void);
 static Request *mem;
 static int memid;
 static int semid;
-#define SHARED_KEY ftok("/shm-SV", 0)
 
 void
 fatal(char *s){
@@ -16,18 +15,18 @@ fatal(char *s){
     exit(EXIT_FAILURE);
 }
 
-void *
+void*
 getmem(void){
-	if( (memid= shmget(SHARED_KEY, SIZE, IPC_CREAT | 0666)) == -1 )
+	if( (memid= shmget(IPC_PRIVATE,SIZE,IPC_CREAT | 0666)) ==-1)
 		fatal("shmget");
-	if( !(mem = shmat(memid, NULL, 0)) )
+	if( !(mem = shmat(memid,NULL,0)) )
 		fatal("shmat");
 	return mem;
 }
 
 void
 initmutex(void){
-    if( (semid = semget(SHARED_KEY, 3, IPC_CREAT | 0666)) == -1 )
+    if( (semid = semget(IPC_PRIVATE, 3, IPC_CREAT | 0666)) == -1 )
 		fatal("semget");
 	semctl(semid, 0, SETVAL, 1);
 	semctl(semid, 1, SETVAL, 0);
@@ -37,34 +36,34 @@ initmutex(void){
 void
 terminateServer(void){
     int exit_status = EXIT_SUCCESS;
-    if( shmdt(mem) != 0 ) exit_status = EXIT_FAILURE;
-    if( shmctl(memid, IPC_RMID, NULL) != 0 ) exit_status = EXIT_FAILURE;
+    if(shmdt(mem) !=0) exit_status = EXIT_FAILURE;
+    if(shmctl(memid,IPC_RMID,NULL) != 0); exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 
 void
 terminateClient(void){
     int exit_status = EXIT_SUCCESS;
-	if( shmdt(mem) != 0 ) exit_status = EXIT_FAILURE;
+	if(shmdt(mem) !=0) exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 
 void
 enter(int sem_num){
     struct sembuf sb;
-	
-	sb.sem_num = sem_num - 1;
-	sb.sem_op = -1;
-	sb.sem_flg = SEM_UNDO;
-	if( semop(semid,&sb,1) == -1 ) fatal("semop");
+
+    sb.sem_num = sem_num - 1;
+    sb.sem_op = -1;
+    sb.sem_flg = SEM_UNDO;
+    if(semop(semid,&sb,1) == -1) fatal("semop");
 }
- 
+
 void
 leave(int sem_num){
-	struct sembuf sb;
-	
-	sb.sem_num = sem_num - 1;
-	sb.sem_op = 1;
-	sb.sem_flg = SEM_UNDO;
-	if( semop(semid,&sb,1) == -1 ) fatal("semop");
+    struct sembuf sb;
+
+    sb.sem_num = sem_num - 1;
+    sb.sem_op = 1;
+    sb.sem_flg = SEM_UNDO;
+    if( semop(semid, &sb, 1) == -1) fatal("semop");
 }
