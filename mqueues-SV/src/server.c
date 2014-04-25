@@ -20,21 +20,21 @@ int
 main(void){
 	signal(SIGINT, terminateServer);
 
-	msqin= msgget(CLIENTS_KEY, IPC_CREAT | S_IRUSR);
+	msqin= msgget(CLIENTS_KEY, IPC_CREAT | 0666);  //S_IRUSR
 	if(msqin==-1)
 		fatal("msgget");
 
-	msqout= msgget(SERVER_KEY, IPC_CREAT | S_IWUSR);
+	msqout= msgget(SERVER_KEY, IPC_CREAT | 0666); //S_IWUSR
 	if(msqout==-1)
 		fatal("msgget");
 	
 	for(;;){
-		if(msgrcv(msqin, (char *)&reqMsg , sizeof(reqMsg), 0, IPC_NOWAIT)==-1){
+		if(msgrcv(msqin, (char *)&reqMsg , sizeof(reqMsg), 0, 0)==-1){
 		printf("error msgrcv\n");
 		}
 		execRequest();
 		respMsg.mtype=reqMsg.mtype;
-		if(msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), IPC_NOWAIT)==-1){
+		if(msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), 0)==-1){
 		printf("error msgsnd\n");
 		}
 	}
