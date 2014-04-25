@@ -20,8 +20,8 @@ main(void){
     initmutex();
     signal(SIGINT, onSigInt);
     // Start with semaphores 2 and 3 in 0 (down)
-    enter2();
-    enter3();
+   // enter2();
+  //  enter3();
 
     for(;;){
         enter2();
