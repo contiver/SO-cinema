@@ -5,7 +5,6 @@
 void terminateServer(int sig);
 void execRequest(void);
 
-
 static ReqMsg reqMsg;
 static RespMsg respMsg;
 static int msqin =-1,msqout=-1;
@@ -20,11 +19,11 @@ int
 main(void){
 	signal(SIGINT, terminateServer);
 
-	msqin= msgget(CLIENTS_KEY, IPC_CREAT | S_IRUSR);
+	msqin= msgget(CLIENTS_KEY, IPC_CREAT | 0666);
 	if(msqin==-1)
 		fatal("msgget");
 
-	msqout= msgget(SERVER_KEY, IPC_CREAT | S_IWUSR);
+	msqout= msgget(SERVER_KEY, IPC_CREAT | 0666);
 	if(msqout==-1)
 		fatal("msgget");
 	

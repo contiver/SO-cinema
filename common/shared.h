@@ -6,6 +6,7 @@
 #define STD_SEAT_QTY 60
 
 typedef struct{
+    int ret;
     char m[10][60];
 } Matrix;
 

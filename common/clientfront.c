@@ -66,16 +66,18 @@ int check_command(char *com){
 void cancel_ticket(Client c){
     int movieID, seat;
 
-    printf("Insert movie code:\n");
+    printf("Insert movie code: ");
+    fflush(stdout);
     scanf("%d", &movieID);    
-    printf("Insert seat ticket to cancel:\n");
+    printf("\n Insert seat ticket to cancel: ");
+    fflush(stdout);
     scanf("%d", &seat);    
 
     if( cancel_seat(c, movieID, seat) == 1){
-        printf("Sorry, we couldn't cancel the seat because it isn't yours\n");
+        printf(RED "Error: The seat you are trying to cancel isn't yours\n" RESET); 
     }
     else{
-        printf("Your seat has been cancelled\n");
+        printf(GREEN "Seat successfully cancelled\n" RESET);
     }
 }
 
@@ -121,14 +123,15 @@ void buy_ticket(Client c){
 
         if(scanf("%d", &seat)!=1){
             aux = INVALID_SEAT;
-            printf( RED "Invalid number of seat\n" RESET);
+            printf(RED "Invalid number of seat\n" RESET);
         }
         else{
             aux = reserve_seat(c, movieID, seat);
             if( aux == SEAT_TAKEN ){
-                printf("Sorry, that seat is taken, please try with another one\n");
+                printf(YELLOW "Sorry, that seat is already taken."
+                       " Please try with another one.\n" RESET);
             }else if(aux == INVALID_SEAT){
-                printf("Invalid number of seat\n");
+                printf("Error: Invalid seat number\n");
             }
         }
     }
@@ -140,14 +143,17 @@ list_movies(void){
     int code = 1, i = 0;
     Matrix movies;
     movies = get_movies_list();
-    /*    switch( error ){
-          case -1: printf("ListMovies file not found in database\n");
-          break;
-          case -2: printf("Error reading from file\n"); 
-          break;
-          }
-          return;
-          }*/
+    if(movies.ret != 0){
+        switch( movies.ret ){
+            case -1:
+                printf(RED "Error: movie list not found in database.\n" RESET);
+                break;
+            case -2:
+                printf(RED "Error reading from file\n" RESET); 
+                break;
+        }
+        return;
+    }
     printf("------------------------------------------------------------\n");
     for(i = 0; i < 10; i++){
         printf("%s\t\tCode:%d\n",movies.m[i],code++);
@@ -155,14 +161,15 @@ list_movies(void){
     printf("------------------------------------------------------------\n");
 }
 
-void printSeats(char seats[][MAX_LENGTH]){
+void
+printSeats(char seats[][MAX_LENGTH]){
     int row, col, seatNumber;
     for(row = 0; row < ROWS; row++){
         for(col = 0; col < COLS; col++){
             if( strcmp(seats[seatNumber = row*10 + col], "\0") == 0 ){
                 printf("%4d", seatNumber+1);
             }else{
-                printf("%4s", "X");
+                printf(YELLOW "%4s" RESET, "X");
             }
         }
         printf("\n");

@@ -2,9 +2,8 @@
 #include <stdio.h>
 #include "dbAccess.h"
 
-
 /* File locking auxiliary functions particular to the backend implementation */
-struct flock fl = {.l_start = 0, .l_whence = SEEK_SET, .l_len = 0};
+static struct flock fl = {.l_start = 0, .l_whence = SEEK_SET, .l_len = 0};
 int unlockFile(int fd);
 int wrlockFile(int fd);
 int rdlockFile(int fd);
@@ -101,14 +100,13 @@ reserve_seat(Client c, int movieID, int seat){
 
 Matrix
 get_movies_list(){
-    Matrix m;
+    Matrix matrix;
     FILE *file = fopen(MLIST_PATH, "rb");
-    /*
-    if( file == NULL ) return -1;
-    if( fread(movies_list, sizeof(char[10][60]), 1, file) != 1) return -2;
-   */ 
-    fread(&m, sizeof(Matrix), 1, file);
-    return m;
+    if( file == NULL ){
+       matrix.ret = -1; 
+    }else if( fread(&matrix, sizeof(Matrix), 1, file) == -1 )
+       matrix.ret = -2;
+    return matrix;
 }
 
 int
