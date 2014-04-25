@@ -64,7 +64,7 @@ communicate(void){
     hints.ai_family = AF_UNSPEC; /* Allows IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_NUMERICSERV;
-    if (getaddrinfo("localhost", PORT_NUM, &hints, &result) != 0)
+    if (getaddrinfo("192.168.1.100", PORT_NUM, &hints, &result) != 0)
         fatal("getaddrinfo");
 
     /* Walk through returned list until we find an address structure
