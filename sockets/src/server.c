@@ -1,20 +1,24 @@
-#include <stdlib.h>
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include "mutual.h"
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 
-#define BACKLOG 5
+#define BACKLOG 50
+#define _BSD_SOURCE
+/* To get definitions of NI_MAXHOST and
+                        NI_MAXSERV from <netdb.h> */
+#include <netdb.h>
 
 void onSigInt(int sig);
 Response execRequest(Request r);
-
 Request req;
-Response resp; 
+Response resp;
+
 static int sfd = -1, cfd = -1;
 
 void
@@ -24,42 +28,87 @@ fatal(char *s){
 }
 
 int
-main(int argc, char *argv[]){
-    struct sockaddr_un addr;
+main(void){
+    struct sockaddr_storage claddr;
+    int lfd, cfd, optval;
+    socklen_t addrlen;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+#define ADDRSTRLEN (NI_MAXHOST + NI_MAXSERV + 10)
 
-    if( (sfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1 )
-        fatal("socket");
+    char addrStr[ADDRSTRLEN];
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
 
-    signal(SIGINT, onSigInt);
+    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+        fatal("signal");
 
-    if(remove(SV_SOCKET_PATH) == -1 && errno != ENOENT)
-        //errExit("remove-%s", SV_SOCKET_PATH);
-        
-    memset(&addr, 0, sizeof(struct sockaddr_un)); /* Clear structure */
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, SV_SOCKET_PATH, sizeof(addr.sun_path) - 1);
+    /* Call getaddrinfo() to obtain a list of addresses that
+       we can try binding to */
 
-    if( bind(sfd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un)) == -1 )
-        fatal("bind");
-    if( listen(sfd, BACKLOG) == -1 ) 
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_UNSPEC; /* Allows IPv4 or IPv6 */
+    hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV;
+
+    /* Wildcard IP address; service name is numeric */
+    if (getaddrinfo(NULL, PORT_NUM, &hints, &result) != 0)
+        fatal("getaddrinfo");
+
+    /* Walk throug returned list until we find an address structure
+     * that can be used to sucessfully create a bind socket */
+
+    optval = 1;
+    for(rp = result; rp != NULL; rp = rp->ai_next){
+        lfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol); 
+        if(lfd == -1)
+            continue;
+        if(setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval))
+                == -1)
+            fatal("setsockopt");
+        if(bind(lfd, rp->ai_addr, rp->ai_addrlen) == 0)
+            break;
+        /* bind() failed: close this socket and try next address */
+        close(lfd);
+    }
+    if(rp == NULL)
+        fatal("Could not bind socket to any address");
+
+    if(listen(lfd, BACKLOG) == -1)
         fatal("listen");
 
+    freeaddrinfo(result);
+
     for(;;){
-        if( (cfd = accept(sfd, NULL, NULL)) == -1 ){
-            perror("accept");        
-            continue; // Ver si esto esta bien!
+        /*Accept a client connection, obtaining client's address */ 
+
+        addrlen = sizeof(struct sockaddr_storage);
+        cfd = accept(lfd, (struct sockaddr *) &claddr, &addrlen);
+        if(cfd == -1){
+            perror("accept");
+            continue; 
         }
 
-        if( read(cfd, &req, sizeof(Request)) != sizeof(Request) )
-            perror("read");
+        if(getnameinfo((struct sockaddr *)&claddr, addrlen,
+                    host, NI_MAXHOST, service, NI_MAXSERV, 0) == 0)
+            snprintf(addrStr, ADDRSTRLEN, "(%s, %s)", host, service);
+        else
+            snprintf(addrStr, ADDRSTRLEN, "(?UNKNOWN?)");
+        printf("Connection from %s\n", addrStr);
+        /* Read client request, send sequence number back */
+        if (read(cfd, &req, sizeof(Request)) != sizeof(Request)) {
+            close(cfd);
+            continue; /* Failed read; skip request */
+        }
         resp = execRequest(req);
+        if (write(cfd, &resp, sizeof(Response)) != sizeof(Response))
+            fprintf(stderr, "Error on write");
 
-        if( write(cfd, &resp, sizeof(Response)) != sizeof(Response) )
-            perror("Couldn't write response to cfd");
-
-        if(close(cfd) == -1){
-            perror("Couldn't close cfd. Ignoring...");
-        }
+        if(close(cfd) == -1) /* Close connection */
+            printf("error close\n");
     }
 }
 
@@ -88,9 +137,6 @@ execRequest(Request r){
             break;
         case MOVIE_LIST:
             resp.matrix = get_movies_list();
-            break;
-        case TEST_CONNECTION:
-            resp.ret = 0;
             break;
     }
     return resp;

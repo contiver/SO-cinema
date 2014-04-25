@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <netdb.h>
 #include "mutual.h"
 #include "../../common/ipc.h"
 #include "../../common/dbAccess.h"
@@ -15,7 +16,7 @@ void communicate(void);
 void fatal(char *s);
 void onSigInt(int sig);
 
-static int sfd = -1;
+static int cfd = -1;
 static struct sockaddr_un addr;
 static Request req;
 static Response resp;
@@ -29,11 +30,8 @@ fatal(char *s){
 void
 initializeClient(){
     signal(SIGINT, onSigInt);
-    memset(&addr, 0, sizeof(struct sockaddr_un));
-    addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, SV_SOCKET_PATH, sizeof(addr.sun_path) -1);
-    return;
 }
+
 
 void
 terminateClient(void){
@@ -55,20 +53,43 @@ get_movie(int movieID){
 
 void
 communicate(void){
-    if( (sfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
-        fatal("socket");
+    struct addrinfo hints, *result, *rp;
+    /* Call getaddrinfo() to obtain a list of addresses that
+       we can try connecting to */
 
-    if(connect(sfd, (struct sockaddr *) &addr,
-            sizeof(struct sockaddr_un)) == - 1)
-                fatal("connect");
-    
-    if(write(sfd, &req, sizeof(Request)) != sizeof(Request))
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+    hints.ai_family = AF_UNSPEC; /* Allows IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_NUMERICSERV;
+    if (getaddrinfo("localhost", PORT_NUM, &hints, &result) != 0)
+        fatal("getaddrinfo");
+
+    /* Walk through returned list until we find an address structure
+       that can be used to successfully connect a socket */
+
+    for(rp = result; rp != NULL; rp = rp->ai_next) {
+        cfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (cfd == -1)
+            continue; /* On error, try next address */
+        if (connect(cfd, rp->ai_addr, rp->ai_addrlen) != -1)
+            break; /* Success */
+        /* Connect failed: close this socket and try next address */ 
+        close(cfd);
+    }
+    if (rp == NULL)
+        fatal("Could not connect socket to any address");
+    freeaddrinfo(result);
+
+    if(write(cfd, &req, sizeof(Request)) != sizeof(Request))
         fatal("Can't write to server\n");
 
-    if(read(sfd, &resp, sizeof(Response)) != sizeof(Response))
+    if(read(cfd, &resp, sizeof(Response)) != sizeof(Response))
         fatal("Can't read response from the server\n");
 
-    if(close(sfd) == -1){
+    if(close(cfd) == -1){
         printf("Error closing the client's FIFO\n");
         exit(EXIT_FAILURE);
     }
@@ -78,7 +99,7 @@ Matrix
 get_movies_list(void){
     req.comm = MOVIE_LIST;
     communicate();
-	return resp.matrix;
+    return resp.matrix;
 }
 
 int
