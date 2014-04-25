@@ -25,50 +25,50 @@ onSigInt(int sig){
 
 Movie
 get_movie(int movieID){
-    enter1();
+    enter(1);
     req->comm = GET_MOVIE;
     req->movieID = movieID;
-    leave2();
-    enter3();
+    leave(2);
+    enter(3);
     memcpy(resp, req, sizeof(Response));
-    leave1();
+    leave(1);
     return resp->m;
 }
 
 Matrix
 get_movies_list(void){
-    enter1();
+    enter(1);
     req->comm = MOVIE_LIST;
-    leave2();
-    enter3();
+    leave(2);
+    enter(3);
     memcpy(resp, req, sizeof(Response));
-    leave1();
-return resp->matrix;
+    leave(1);
+	return resp->matrix;
 }
 
 int
 cancel_seat(Client c, int movieID, int seat){
-    enter1();
+    enter(1);
     req->comm = CANCEL_SEAT;
     req->movieID = movieID;
     req->seat = seat;
-    leave2();
-    enter3();
+    leave(2);
+    enter(3);
     memcpy(resp, req, sizeof(Response));
-    leave1();
+    leave(1);
     return resp->ret;
 }
 
 int
 reserve_seat(Client c, int movieID, int seat){
-    enter1();
+    enter(1);
     req->comm = RESERVE_SEAT;
     req->client = c;
     req->movieID = movieID;
     req->seat = seat;
-    leave2();
-    enter3();
+    leave(2);
+    enter(3);
     memcpy(resp, req, sizeof(Response));
-    leave1();
+    leave(1);
     return resp->ret;
 }

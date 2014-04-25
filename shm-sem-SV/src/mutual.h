@@ -6,34 +6,33 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
-#include <semaphore.h>
+#include <sys/types.h>
+//#include <sys/mman.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
 #include "../../common/ipc.h"
+ 
 #define SIZE sizeof(Request)
  
 void fatal(char *s);
 void *getmem(void);
 void initmutex(void);
 /*
-* SIGINT handler
-*/
+ * SIGINT handler
+ */
 void onSigInt(int sig);
 
 /**
-* Close open semaphores before calling exit()
-*/
+ * Close open semaphores before calling exit()
+ */
 void terminateClient(void);
 
 /**
-* Close open semaphores and unlink them before calling exit()
-*/
+ * Close open semaphores and unlink them before calling exit()
+ */
 void terminateServer(void);
 
-void enter1(void);
-void enter2(void);
-void enter3(void);
-void leave1(void);
-void leave2(void);
-void leave3(void);
+void enter(int sem_num);
+void leave(int sem_num);
 
 #endif
