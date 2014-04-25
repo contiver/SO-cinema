@@ -15,18 +15,15 @@ int
 main(void){
     req = (Request *)getmem();
     memset(req, 0, SIZE);
-    resp = (Response *)req;
+    resp = (Response *)req; 
 
     initmutex();
     signal(SIGINT, onSigInt);
-    // Start with semaphores 2 and 3 in 0 (down)
-  // enter2();
-   // enter3();
 
     for(;;){
-        enter2();
+        enter(2);
         execRequest(*req);
-        leave3();
+        leave(3);
     }
     return 0;
 }
@@ -49,7 +46,7 @@ execRequest(Request r){
             resp->m = get_movie(r.movieID);
             break;
         case MOVIE_LIST:
-            resp->matrix = get_movies_list();
+            resp->matrix = get_movies_list(); 
             break;
         case TEST_CONNECTION:
             resp->ret = 0;

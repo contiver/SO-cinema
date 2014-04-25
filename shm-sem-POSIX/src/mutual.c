@@ -20,14 +20,14 @@ getmem(void){
     int fd;
     Request *mem;
      
-    if ( (fd = shm_open("/message", O_RDWR|O_CREAT, 0666)) == -1  )
+    if ( (fd = shm_open("/message", O_RDWR|O_CREAT, 0666)) == -1 )
         fatal("sh_open");
     if ( ftruncate(fd, SIZE) == -1){
         printf("Error during ftrunctate\n");
         exit(EXIT_FAILURE);
     }
     mem = mmap(NULL, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    if (mem == MAP_FAILED) 
+    if (mem == MAP_FAILED)
         fatal("mmap");
     if( close(fd) ){
         printf("Error closing fd");
