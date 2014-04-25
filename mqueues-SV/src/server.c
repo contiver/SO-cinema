@@ -18,6 +18,18 @@ static int msqid =-1,msqout=-1;
  
 int
 main(void){
+	int msqin, msqout;
+	key_t req_key= ftok(PATH,'x');
+	if(req_key==-1){
+		fatal("ftok");
+	}
+	msqin= msgget(req_key IPC_CREAT | S_IRUSR);
+	
+
+
+
+
+/*
     char cltname[100];
     
     signal(SIGINT, terminateServer);
@@ -28,6 +40,8 @@ main(void){
     
     if ( (msqid = msgget(IPC_PRIVATE, IPC_CREAT | 0666) == -1  )
         fatal("Error msgget");
+
+
          
     for(;;){
         msgrcv(msqid, (char *)&reqMsg, sizeof(reqMsg), 0, IPC_NOWAIT);
@@ -40,7 +54,7 @@ main(void){
         msgsend(msqout, (char *)&respMsg, sizeof(RespMsg), IPC_NOWAIT);
         if(mq_close(qout) == -1)
             printf("Error closing qout descriptor. Ignoring...\n");
-    }
+    }*/
 }
 
 void
