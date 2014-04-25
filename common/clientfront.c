@@ -65,7 +65,7 @@ int check_command(char *com){
 
 void cancel_ticket(Client c){
     int movieID, seat;
-    
+
     printf("Insert movie code:\n");
     scanf("%d", &movieID);    
     printf("Insert seat ticket to cancel:\n");
@@ -74,23 +74,35 @@ void cancel_ticket(Client c){
     if( cancel_seat(c, movieID, seat) == 1){
         printf("Sorry, we couldn't cancel the seat because it isn't yours\n");
     }
-	else{
-		printf("Your seat has been cancelled\n");
-	}
+    else{
+        printf("Your seat has been cancelled\n");
+    }
 }
 
 void buy_ticket(Client c){
-    int movieID, seat, aux = 1;
-    printf("Insert movie code:\n");
-    scanf("%d", &movieID);
+    int movieID, seat, aux = 1,aux1=1;
+    char buffer[1024];
+
+    while(aux1){
+        printf("Insert movie code:\n");
+        fgets(buffer,sizeof(buffer),stdin);
+        scanf("%d", &movieID);
+
+        if(movieID>MOVIES_QTY || movieID<1){
+            printf("Invalid movie code\n");
+        }
+        else{
+            aux1=0;
+        }
+    }
 
     Movie m;
     m.name[0] = 0;
     m = get_movie(movieID);    
 
     if(m.name[0] == 0){
-        printf("Sorry, either the movie code is invalid, or an error\
-                has ocurred while trying to access the database\n");
+        printf("Sorry, an error has ocurred while trying\
+                to access the database\n");
         return;
     }
 
@@ -104,21 +116,21 @@ void buy_ticket(Client c){
         printf("%s %s\n", m.name, m.time);
         printSeats(m.th.seats);
 
-	char buf[1024];
-	fgets(buf,sizeof(buf),stdin);
+        char buf[1024];
+        fgets(buf,sizeof(buf),stdin);
 
         if(scanf("%d", &seat)!=1){
-		aux = INVALID_SEAT;
-		printf( RED "Invalid number of seat\n" RESET);
-	}
-	else{
-        	aux = reserve_seat(c, movieID, seat);
-        	if( aux == SEAT_TAKEN ){
-            	printf("Sorry, that seat is taken, please try with another one\n");
-        	}else if(aux == INVALID_SEAT){
-            	printf("Invalid number of seat\n");
-        	}
-	}
+            aux = INVALID_SEAT;
+            printf( RED "Invalid number of seat\n" RESET);
+        }
+        else{
+            aux = reserve_seat(c, movieID, seat);
+            if( aux == SEAT_TAKEN ){
+                printf("Sorry, that seat is taken, please try with another one\n");
+            }else if(aux == INVALID_SEAT){
+                printf("Invalid number of seat\n");
+            }
+        }
     }
     printf(GREEN "The purchase has been successful\n" RESET);
 }
@@ -129,13 +141,13 @@ list_movies(void){
     Matrix movies;
     movies = get_movies_list();
     /*    switch( error ){
-            case -1: printf("ListMovies file not found in database\n");
-                     break;
-            case -2: printf("Error reading from file\n"); 
-                     break;
-        }
-	return;
-    }*/
+          case -1: printf("ListMovies file not found in database\n");
+          break;
+          case -2: printf("Error reading from file\n"); 
+          break;
+          }
+          return;
+          }*/
     printf("------------------------------------------------------------\n");
     for(i = 0; i < 10; i++){
         printf("%s\t\tCode:%d\n",movies.m[i],code++);
@@ -154,5 +166,5 @@ void printSeats(char seats[][MAX_LENGTH]){
             }
         }
         printf("\n");
-   } 
+    } 
 }

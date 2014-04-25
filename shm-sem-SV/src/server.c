@@ -22,6 +22,7 @@ main(void){
 
     for(;;){
         enter(2);
+	printf("movie code %d",req->movieID);
         execRequest(*req);
         leave(3);
     }
