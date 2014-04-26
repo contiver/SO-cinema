@@ -30,19 +30,19 @@ main(void){
 void
 initializeMovieList(char titles[][TITLE_LEN], char times[][TITLE_LEN]){
      int i;
-     char movies[MOVIES_QTY][60];   
+     Matrix mList;
      FILE *file = fopen(MLIST_PATH, "wb");
      if ( file == NULL ){
             printf("error while creating movie_list file\n");
             exit(1);
      }
      for(i = 0; i < 10; i++){
-            strcpy(movies[i], titles[i]);
-            strcat(movies[i], " ");
-            strcat(movies[i], times[i]);
+            strcpy(mList.m[i], titles[i]);
+            strcat(mList.m[i], " ");
+            strcat(mList.m[i], times[i]);
      }        
-     if( fwrite(&movies, sizeof(movies), 1, file) != 1 ){
-            printf("error while writing movie_list file\n");
+     if( fwrite(&mList, sizeof(mList), 1, file) != 1 ){
+            printf("Error while writing movie_list file\n");
             exit(EXIT_FAILURE);
      }
      fclose(file);

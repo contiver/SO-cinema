@@ -1,12 +1,12 @@
-#ifndef INITIALIZER_H
-#define INITIALIZER_H 
+#ifndef CLIENTBACK_H
+#define CLIENTBACK_H
 
 #include "dbAccess.h"
 
-/* To be changed by every different implementation. Used to initialize
- * each particular requirements (e.g. FIFOs).
- */
+/* Used to initialize each implementation's particular requirements */
 void initializeClient(void);
+
+/* Use to cleanly terminate a client */
 void terminateClient(void);
 
 #endif

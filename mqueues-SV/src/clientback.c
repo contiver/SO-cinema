@@ -35,11 +35,11 @@ initializeClient(void){
     signal(SIGINT, onSigInt);
     reqMsg.mtype = (long) getpid();
 
-	msqin= msgget(SERVER_KEY, IPC_CREAT | S_IRUSR);
+	msqin= msgget(SERVER_KEY, IPC_CREAT | 0666); 
 	if(msqin==-1)
 		fatal("msgget");
 
-	msqout= msgget(CLIENTS_KEY, IPC_CREAT | S_IWUSR);
+	msqout= msgget(CLIENTS_KEY, IPC_CREAT | 0666); 
 	if(msqout==-1)
 		fatal("msgget");
 	
@@ -48,11 +48,6 @@ initializeClient(void){
 void
 terminateClient(void){
 	exit(EXIT_SUCCESS);
-    //int exit_status = EXIT_SUCCESS;
-    //if( mq_close(qin) == -1) exit_status = EXIT_FAILURE;
-    //if( mq_close(qout) == -1) exit_status = EXIT_FAILURE; 
-   // if( mq_unlink(cltname) == -1) exit_status = EXIT_FAILURE;
- //   exit(exit_status);
 }
 
 Movie
@@ -92,10 +87,10 @@ reserve_seat(Client c, int movieID, int seat){
 void
 communicate(void){
 
-	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), IPC_NOWAIT)==-1){
+	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0)==-1){
 		printf("error msgsnd\n");
 	}
-	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), IPC_NOWAIT)==-1){
+	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0)==-1){
 		printf("error msgrcv\n");
 	}
 }

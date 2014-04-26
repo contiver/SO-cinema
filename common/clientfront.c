@@ -14,7 +14,7 @@ main(void){
     Client c = login();
     initializeClient();
     while(true){
-        printf("\nPlease type the desired option: ");  
+        printf("\nPlease type the desired option: \n");  
         printf("ListMovies\nBuyMovie\nCancelMovie\nExit\n\n");
         scanf("%s",command);
         execute_command(command, c);
@@ -151,6 +151,8 @@ list_movies(void){
             case -2:
                 printf(RED "Error reading from file\n" RESET); 
                 break;
+            default:
+                printf("ERROR: ret = %d\n", movies.ret);
         }
         return;
     }

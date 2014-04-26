@@ -1,0 +1,3 @@
+servidores mqueues emprolijados, falta hacer lo mismo con los clientes
+Emprolijar el resto de los servidores y clientes de las otras implementaciones!
+Ver el tema de errores con printf que no abortan o hacen continue en shared memories SV (creo)

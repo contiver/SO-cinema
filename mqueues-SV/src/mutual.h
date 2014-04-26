@@ -4,9 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <signal.h>
-//#include <sys/stat.h>
 #include <sys/msg.h>
 #include <sys/types.h>
 #include "../../common/shared.h"

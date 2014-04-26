@@ -101,6 +101,7 @@ reserve_seat(Client c, int movieID, int seat){
 Matrix
 get_movies_list(){
     Matrix matrix;
+    matrix.ret = 0;
     FILE *file = fopen(MLIST_PATH, "rb");
     if( file == NULL ){
        matrix.ret = -1; 

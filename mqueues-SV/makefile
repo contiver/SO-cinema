@@ -17,11 +17,14 @@ clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAcces
 clientback.o: $(SRC)/clientback.c $(COMMON)/ipc.h $(COMMON)/shared.h $(COMMON)/dbAccess.h $(SRC)/mutual.h
 	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
 
-server: server.o $(COMMON)/dbAccess.o 
-	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o -lrt
+server: server.o $(COMMON)/dbAccess.o $(COMMON)/servercommon.o
+	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o $(COMMON)/servercommon.o -lrt
 
 server.o: $(SRC)/server.c $(COMMON)/dbAccess.c $(COMMON)/ipc.h $(COMMON)/shared.h $(SRC)/mutual.h
 	$(CC) $(CFLAGS) -c $(SRC)/server.c $(COMMON)/dbAccess.c
+
+servercommon.o: $(COMMON)/servercommon.c $(COMMON)/server.h 
+	$(CC) $(CFLAGS) -c $(COMMON)/servercommon.c
 
 dbAccess.o: $(COMMON)/dbAccess.c $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/dbAccess.c
