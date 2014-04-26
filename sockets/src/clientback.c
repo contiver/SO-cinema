@@ -1,23 +1,25 @@
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <signal.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
-#include <netdb.h>
+#include <unistd.h>
+
 #include "mutual.h"
-#include "../../common/ipc.h"
-#include "../../common/dbAccess.h"
-#include "../../common/shared.h"
 #include "../../common/clientback.h"
+#include "../../common/dbAccess.h"
+#include "../../common/ipc.h"
+#include "../../common/shared.h"
 
 void communicate(void);
 void fatal(char *s);
 void onSigInt(int sig);
 
 static int cfd = -1;
-static struct sockaddr_un addr;
 static Request req;
 static Response resp;
 
@@ -53,37 +55,22 @@ get_movie(int movieID){
 
 void
 communicate(void){
-    struct addrinfo hints, *result, *rp;
-    /* Call getaddrinfo() to obtain a list of addresses that
-       we can try connecting to */
+    struct sockaddr_in addr;
+    /* Construct server address, and make the connection */
+    memset(&addr, 0, sizeof(struct sockaddr_in));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(50000);
+    inet_pton(AF_INET, "192.168.1.100", &(addr.sin_addr));
+    if( (cfd = socket(AF_INET, SOCK_STREAM,0)) == -1){
+        perror("initializing socket");
+        exit(1);
+    }
+    if(connect(cfd, (struct sockaddr *) &addr,
+                sizeof(struct sockaddr_in)) == -1){
+        perror("connect");
+        exit(1);
+    }
 
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-    hints.ai_family = AF_UNSPEC; /* Allows IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_NUMERICSERV;
-    if (getaddrinfo("192.168.1.100", PORT_NUM, &hints, &result) != 0)
-        fatal("getaddrinfo");
-
-    /* Walk through returned list until we find an address structure
-       that can be used to successfully connect a socket */
-
-//    for(rp = result; rp != NULL; rp = rp->ai_next) {
-//        cfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-//        if (cfd == -1)
-//            continue; /* On error, try next address */
-//        if (connect(cfd, "192.168.1.100", rp->ai_addrlen) != -1)
-//            break; /* Success */
-//        /* Connect failed: close this socket and try next address */ 
-//        close(cfd);
-//    }
-//    if (rp == NULL)
-//        fatal("Could not connect socket to any address");
-//    freeaddrinfo(result);
-
-    cfd = socket(AF_UNSPEC, )
     if(write(cfd, &req, sizeof(Request)) != sizeof(Request))
         fatal("Can't write to server\n");
 
