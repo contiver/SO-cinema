@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "../../common/dbAccess.h"
 #include "../../common/server.h"
+#include "../../common/error_handling.h"
 #include "mutual.h"
 
 static int msqin = -1, msqout = -1;
@@ -35,4 +36,9 @@ terminateServer(void){
     if( msqin != -1 && msgctl(msqin, IPC_RMID, NULL) == -1 ) exit_status = EXIT_FAILURE;
     if( msqout != -1 && msgctl(msqout, IPC_RMID, NULL) == -1 ) exit_status = EXIT_FAILURE;
     exit(exit_status);
+}
+
+void
+onSigInt(int sig){
+    terminateServer();
 }

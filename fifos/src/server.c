@@ -5,26 +5,25 @@
 #include <sys/stat.h>
 #include "../include/fifo.h"
 #include "../../common/shared.h"
+#include "../../common/server.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 
-void onSigInt(int sig);
-Request req;
-Response resp; 
-Response execRequest(Request r);
 static int serverFd = -1, dummyFd = -1, clientFd = -1;
 
 int main(int argc, char *argv[]){
+    Request req;
+    Response resp; 
     char clientFifo[CLIENT_FIFO_NAME_LEN];
-    
+
     if(mkfifo(SERVER_FIFO, S_IRUSR | S_IWUSR | S_IWGRP) == -1
             && errno != EEXIST){
         printf("error creating server fifo");
         exit(EXIT_FAILURE);
     }
-    
+
     signal(SIGINT, onSigInt);
-    
+
     serverFd = open(SERVER_FIFO, O_RDONLY);
     if(serverFd == -1){
         printf("error opening the server fifo\n");
@@ -48,10 +47,10 @@ int main(int argc, char *argv[]){
 
     for(;;){
         if(read(serverFd, &req, sizeof(Request)) != sizeof(Request)){
-            fprintf(stderr, "Error reading request' discarding\n");    
+            fprintf(stderr, "Error reading request. Discarding...\n");    
             continue;
         } 
-        
+
         snprintf(clientFifo, CLIENT_FIFO_NAME_LEN, CLIENT_FIFO_TEMPLATE,
                 (long) req.pid);
         clientFd = open(clientFifo, O_WRONLY);
@@ -65,40 +64,22 @@ int main(int argc, char *argv[]){
         if( write(clientFd, &resp, sizeof(Response)) != sizeof(Response) )
             printf("Error writing to FIFO %s", clientFifo);
         if(close(clientFd) == -1){
-           printf("error closing FIFO %s\n", clientFifo); 
+            printf("error closing FIFO %s\n", clientFifo); 
         }
     }
 }
 
 void
 onSigInt(int sig){
-    int exit_status = EXIT_SUCCESS;
-    if(clientFd != -1 && close(clientFd) != 0) exit_status = EXIT_FAILURE;
-    if(dummyFd != -1 && close(dummyFd) != 0) exit_status = EXIT_FAILURE;
-    if(serverFd != -1 && close(serverFd) != 0) exit_status = EXIT_FAILURE;
-    if(unlink(SERVER_FIFO) != 0) exit_status = EXIT_FAILURE;
-    exit(exit_status);
+    terminateServer();
 }
 
-Response execRequest(Request r){
-    Response resp;
-
-    switch(r.comm){
-        case RESERVE_SEAT:
-            resp.ret = reserve_seat(r.client, r.movieID, r.seat);
-            break;
-        case CANCEL_SEAT:
-            resp.ret = cancel_seat(r.client, r.movieID, r.seat);
-            break;
-        case GET_MOVIE:
-            resp.m = get_movie(r.movieID);
-            break;
-        case MOVIE_LIST:
-            resp.matrix = get_movies_list();
-            break;
-        case TEST_CONNECTION:
-            resp.ret = 0;
-            break;
-    }
-    return resp;
+void
+terminateServer(void){
+    int exit_status = EXIT_SUCCESS;
+    if(clientFd != -1 && close(clientFd) ) exit_status = EXIT_FAILURE;
+    if(dummyFd != -1 && close(dummyFd) ) exit_status = EXIT_FAILURE;
+    if(serverFd != -1 && close(serverFd) ) exit_status = EXIT_FAILURE;
+    if(unlink(SERVER_FIFO) ) exit_status = EXIT_FAILURE;
+    exit(exit_status);
 }

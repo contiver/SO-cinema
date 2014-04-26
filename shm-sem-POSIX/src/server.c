@@ -5,28 +5,24 @@
 #include "../../common/ipc.h"
 #include "../../common/shared.h"
 #include "../../common/dbAccess.h"
+#include "../../common/server.h"
 #include "mutual.h"
-
-void execRequest(Request r);
-static Request *req;
-static Response *resp;
 
 int
 main(void){
+    Request *req;
+    Response *resp;
     req = (Request *)getmem();
-    memset(req, 0, SIZE);
+    memset(req, 0, SHM_SIZE);
     resp = (Response *)req;
 
     initmutex();
     signal(SIGINT, onSigInt);
-    // Start with semaphores 2 and 3 in 0 (down)
-  // enter2();
-   // enter3();
 
     for(;;){
-        enter2();
-        execRequest(*req);
-        leave3();
+        enter(2);
+        *resp = execRequest(*req);
+        leave(3);
     }
     return 0;
 }
@@ -34,25 +30,4 @@ main(void){
 void
 onSigInt(int sig){
     terminateServer();
-}
-
-void
-execRequest(Request r){
-    switch(r.comm){
-        case RESERVE_SEAT:
-            resp->ret = reserve_seat(r.client, r.movieID, r.seat);
-            break;
-        case CANCEL_SEAT:
-            resp->ret = cancel_seat(r.client, r.movieID, r.seat);
-            break;
-        case GET_MOVIE:
-            resp->m = get_movie(r.movieID);
-            break;
-        case MOVIE_LIST:
-            resp->matrix = get_movies_list();
-            break;
-        case TEST_CONNECTION:
-            resp->ret = 0;
-            break;
-    }
 }

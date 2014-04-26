@@ -1,7 +1,8 @@
-#include "mutual.h"
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
+#include "mutual.h"
+#include "../../common/error_handling.h"
 
 void initmutex(void);
 
@@ -9,12 +10,6 @@ static Request *mem;
 static int memid;
 static int semid;
 #define SHARED_KEY ftok("/shm-SV", 0)
-
-void
-fatal(char *s){
-    perror(s);
-    exit(EXIT_FAILURE);
-}
 
 void *
 getmem(void){

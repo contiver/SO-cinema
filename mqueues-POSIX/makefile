@@ -17,8 +17,11 @@ clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAcces
 clientback.o: $(SRC)/clientback.c $(COMMON)/ipc.h $(COMMON)/shared.h $(COMMON)/dbAccess.h $(SRC)/mutual.h
 	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
 
-server: server.o $(COMMON)/servercommon.o $(COMMON)/dbAccess.o 
-	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o $(COMMON)/servercommon.o -lrt
+server: server.o $(COMMON)/servercommon.o $(COMMON)/dbAccess.o error_handling.o 
+	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o $(COMMON)/servercommon.o error_handling.o -lrt
+
+error_handling.o: $(COMMON)/error_handling.c $(COMMON)/error_handling.h 
+	$(CC) $(CFLAGS) -c $(COMMON)/error_handling.c
 
 servercommon.o: $(COMMON)/servercommon.c $(COMMON)/server.h
 	$(CC) $(CFLAGS) -c servercommon.c

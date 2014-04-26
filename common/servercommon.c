@@ -6,12 +6,6 @@
 #include "shared.h"
 #include "ipc.h"
 
-void
-fatal(char *s){
-    perror(s);
-    exit(EXIT_FAILURE);
-}
-
 Response
 execRequest(Request r){
     Response response;
@@ -36,9 +30,4 @@ execRequest(Request r){
             response.ret = -1;
     }
     return response;
-}
-
-void
-onSigInt(int sig){
-    terminateServer();
 }

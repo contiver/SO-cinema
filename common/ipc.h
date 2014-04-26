@@ -3,7 +3,7 @@
 #include <sys/types.h> 
 #include "shared.h"
 
-typedef enum{RESERVE_SEAT, CANCEL_SEAT, GET_MOVIE, MOVIE_LIST, TEST_CONNECTION} command;
+typedef enum{RESERVE_SEAT, CANCEL_SEAT, GET_MOVIE, MOVIE_LIST} command;
 
 typedef struct  {
     pid_t pid;   // client's pid

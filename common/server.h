@@ -5,6 +5,6 @@
 
 void terminateServer(void);
 Response execRequest(Request request);
-void fatal(char *s);
+void onSigInt(int sig);
 
 #endif

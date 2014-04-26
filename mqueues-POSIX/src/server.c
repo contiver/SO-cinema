@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "../../common/dbAccess.h"
 #include "../../common/server.h"
+#include "../../common/error_handling.h"
 #include "mutual.h"
 
 static mqd_t qin = -1, qout = -1;
@@ -43,4 +44,9 @@ terminateServer(void){
     }
     if( qout != -1 && mq_close(qout) == -1 ) exit_status = EXIT_FAILURE;
     exit(exit_status);
+}
+
+void
+onSigInt(int sig){
+    terminateServer();
 }

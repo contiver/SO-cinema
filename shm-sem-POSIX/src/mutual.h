@@ -9,9 +9,9 @@
 #include <sys/mman.h>
 #include <semaphore.h>
 #include "../../common/ipc.h"
-#define SIZE sizeof(Request)
+
+#define SHM_SIZE sizeof(Request) /* A request is bigger than a response */
  
-void fatal(char *s);
 void *getmem(void);
 void initmutex(void);
 /*
@@ -29,11 +29,7 @@ void terminateClient(void);
 */
 void terminateServer(void);
 
-void enter1(void);
-void enter2(void);
-void enter3(void);
-void leave1(void);
-void leave2(void);
-void leave3(void);
+void enter(int sem_num);
+void leave(int sem_num);
 
 #endif

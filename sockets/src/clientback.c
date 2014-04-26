@@ -70,19 +70,20 @@ communicate(void){
     /* Walk through returned list until we find an address structure
        that can be used to successfully connect a socket */
 
-    for(rp = result; rp != NULL; rp = rp->ai_next) {
-        cfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if (cfd == -1)
-            continue; /* On error, try next address */
-        if (connect(cfd, rp->ai_addr, rp->ai_addrlen) != -1)
-            break; /* Success */
-        /* Connect failed: close this socket and try next address */ 
-        close(cfd);
-    }
-    if (rp == NULL)
-        fatal("Could not connect socket to any address");
-    freeaddrinfo(result);
+//    for(rp = result; rp != NULL; rp = rp->ai_next) {
+//        cfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+//        if (cfd == -1)
+//            continue; /* On error, try next address */
+//        if (connect(cfd, "192.168.1.100", rp->ai_addrlen) != -1)
+//            break; /* Success */
+//        /* Connect failed: close this socket and try next address */ 
+//        close(cfd);
+//    }
+//    if (rp == NULL)
+//        fatal("Could not connect socket to any address");
+//    freeaddrinfo(result);
 
+    cfd = socket(AF_UNSPEC, )
     if(write(cfd, &req, sizeof(Request)) != sizeof(Request))
         fatal("Can't write to server\n");
 
