@@ -7,15 +7,18 @@ COMMON = ../common
 
 default: client server
 
-client: clientfront.o clientback.o
+client: clientfront.o clientback.o rdwrn.o
 	@mkdir -p $(BIN)
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o -lrt
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o rdwrn.o -lrt
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/clientfront.c
 
-clientback.o: $(SRC)/clientback.c $(COMMON)/ipc.h $(COMMON)/shared.h $(COMMON)/dbAccess.h $(SRC)/mutual.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
+clientback.o: $(SRC)/clientback.c $(COMMON)/ipc.h $(COMMON)/shared.h $(COMMON)/dbAccess.h $(SRC)/mutual.h $(SRC)/rdwrn.c
+	$(CC) $(CFLAGS) -c $(SRC)/clientback.c $(SRC)/rdwrn.c
+
+rdwrn.o: $(SRC)/rdwrn.c
+	$(CC) $(CFLAGS) -c $(SRC)/rdwrn.c
 
 server: server.o $(COMMON)/dbAccess.o 
 	$(CC) $(CFLAGS) -o $(BIN)/server server.o $(COMMON)/dbAccess.o -lrt

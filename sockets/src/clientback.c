@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "mutual.h"
+#include "rdwrn.h"
 #include "../../common/clientback.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
@@ -71,10 +72,10 @@ communicate(void){
         exit(1);
     }
 
-    if(write(cfd, &req, sizeof(Request)) != sizeof(Request))
+    if(writen(cfd, &req, sizeof(Request)) != sizeof(Request))
         fatal("Can't write to server\n");
 
-    if(read(cfd, &resp, sizeof(Response)) != sizeof(Response))
+    if(readn(cfd, &resp, sizeof(Response)) != sizeof(Response))
         fatal("Can't read response from the server\n");
 
     if(close(cfd) == -1){
