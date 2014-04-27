@@ -8,5 +8,8 @@ default:
 	cd filelocks; make
 	cd fifos; make
 	cd shm-sem-POSIX; make
+	cd shm-sem-SV; make
 	cd mqueues-POSIX; make
+	cd mqueues-SV; make
 	cd files-signals; make
+	cd sockets; make

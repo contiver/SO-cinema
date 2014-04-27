@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include "mutual.h"
 #include "../../common/shared.h"
+#include "../../common/server.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 
@@ -15,20 +16,12 @@
 #include <netdb.h>
 
 void onSigInt(int sig);
-Response execRequest(Request r);
-Request req;
-Response resp;
-
 static int sfd = -1, cfd = -1;
-
-void
-fatal(char *s){
-    perror(s);
-    exit(EXIT_FAILURE);
-}
 
 int
 main(void){
+    Request req;
+    Response resp;
     struct sockaddr_storage claddr;
     int lfd, cfd, optval;
     socklen_t addrlen;
@@ -55,7 +48,7 @@ main(void){
     hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV;
 
     /* Wildcard IP address; service name is numeric */
-    if (getaddrinfo(NULL, PORT_NUM, &hints, &result) != 0)
+    if (getaddrinfo(NULL, "50000", &hints, &result) != 0)
         fatal("getaddrinfo");
 
     /* Walk throug returned list until we find an address structure
@@ -117,27 +110,5 @@ onSigInt(int sig){
     int exit_status = EXIT_SUCCESS;
     if( cfd != -1 && close(cfd) != 0 ) exit_status = EXIT_FAILURE;
     if( sfd != -1 && close(sfd) != 0 ) exit_status = EXIT_FAILURE;
-    if( remove(SV_SOCKET_PATH) != 0 ) exit_status = EXIT_FAILURE;
     exit(exit_status);
-}
-
-Response
-execRequest(Request r){
-    Response resp;
-
-    switch(r.comm){
-        case RESERVE_SEAT:
-            resp.ret = reserve_seat(r.client, r.movieID, r.seat);
-            break;
-        case CANCEL_SEAT:
-            resp.ret = cancel_seat(r.client, r.movieID, r.seat);
-            break;
-        case GET_MOVIE:
-            resp.m = get_movie(r.movieID);
-            break;
-        case MOVIE_LIST:
-            resp.matrix = get_movies_list();
-            break;
-    }
-    return resp;
 }

@@ -153,7 +153,7 @@ communicate(void){
     int s;
     long serverpid;
 
-    FILE *file = fopen(SERVER_FILE_PID, "rb");
+    FILE *file = fopen(SERVER_PID_FILE, "rb");
     if ( file == NULL ){
         printf("error while opening server_pid file\n");
         exit(EXIT_FAILURE);

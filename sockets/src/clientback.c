@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
+#include "mutual.h"
 #include <netdb.h>
 #include <signal.h>
 #include <stdio.h>
@@ -8,13 +9,14 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "mutual.h"
 #include "rdwrn.h"
 #include "../../common/clientback.h"
+#include "../../common/error_handling.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 #include "../../common/shared.h"
+
+#define HARDCODED_SV_IP "192.168.1.100"
 
 void communicate(void);
 void fatal(char *s);
@@ -25,33 +27,17 @@ static Request req;
 static Response resp;
 
 void
-fatal(char *s){
-    perror(s);
-    exit(EXIT_FAILURE);
-}
-
-void
 initializeClient(){
     signal(SIGINT, onSigInt);
 }
 
-
 void
 terminateClient(void){
-    int exit_status = EXIT_SUCCESS;
-    exit(exit_status);
+    exit(EXIT_SUCCESS);
 }
 
 void onSigInt(int sig){
     terminateClient();
-}
-
-Movie
-get_movie(int movieID){
-    req.comm = GET_MOVIE;
-    req.movieID = movieID;
-    communicate();
-    return resp.m;
 }
 
 void
@@ -60,17 +46,13 @@ communicate(void){
     /* Construct server address, and make the connection */
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(50000);
-    inet_pton(AF_INET, "192.168.1.100", &(addr.sin_addr));
-    if( (cfd = socket(AF_INET, SOCK_STREAM,0)) == -1){
-        perror("initializing socket");
-        exit(1);
-    }
-    if(connect(cfd, (struct sockaddr *) &addr,
-                sizeof(struct sockaddr_in)) == -1){
-        perror("connect");
-        exit(1);
-    }
+    addr.sin_port = htons(PORT_NUM);
+    inet_pton(AF_INET, HARDCODED_SV_IP, &(addr.sin_addr));
+    if( (cfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        fatal("socket");
+    if(connect(cfd, (struct sockaddr *) &addr, 
+                sizeof(struct sockaddr_in)) == -1)
+        fatal("connect");
 
     if(writen(cfd, &req, sizeof(Request)) != sizeof(Request))
         fatal("Can't write to server\n");
@@ -82,6 +64,14 @@ communicate(void){
         printf("Error closing the client's FIFO\n");
         exit(EXIT_FAILURE);
     }
+}
+
+Movie
+get_movie(int movieID){
+    req.comm = GET_MOVIE;
+    req.movieID = movieID;
+    communicate();
+    return resp.m;
 }
 
 Matrix
