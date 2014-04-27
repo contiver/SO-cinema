@@ -158,7 +158,7 @@ communicate(void){
         printf("error while opening server_pid file\n");
         exit(EXIT_FAILURE);
     }
-    fread(&serverpid,sizeof(serverpid),1,file);
+    fread(&serverpid, sizeof(serverpid), 1, file);
     fclose(file);
 
     s = kill(serverpid, SIGUSR1);
@@ -194,12 +194,12 @@ communicate_with_server(void){
     communicate();
     sigaction(SIGUSR2,&sig,NULL);
     
-	if(sigprocmask(SIG_BLOCK, &mask, &oldmask)==-1)
+	if( sigprocmask(SIG_BLOCK, &mask, &oldmask) == -1)
 		fatal("oldmask");
 	sigemptyset(&mask);
-	if(sigsuspend(&mask)==-1 && errno!= EINTR)
+	if( sigsuspend(&mask) == -1 && errno != EINTR)
 		fatal("sigsuspend");
-	if(sigprocmask(SIG_SETMASK, &oldmask, NULL)==-1)
+	if( sigprocmask(SIG_SETMASK, &oldmask, NULL)==-1)
 		fatal("oldmask2");
 }
 

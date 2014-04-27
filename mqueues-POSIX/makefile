@@ -7,9 +7,9 @@ COMMON = ../common
 
 default: client server
 
-client: clientfront.o clientback.o
+client: clientfront.o clientback.o error_handling.o
 	@mkdir -p $(BIN)
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o -lrt
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o error_handling.o -lrt
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/clientfront.c

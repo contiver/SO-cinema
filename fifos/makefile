@@ -7,15 +7,18 @@ COMMON = ../common
 
 default: client server
 
-client: clientfront.o clientback.o
+client: clientfront.o clientback.o error_handling.o
 	@mkdir -p $(BIN)
-	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o
+	$(CC) $(CFLAGS) -o $(BIN)/client clientfront.o clientback.o error_handling.o
 
 clientfront.o: $(COMMON)/clientfront.c $(COMMON)/clientfront.h $(COMMON)/dbAccess.h $(COMMON)/shared.h 
 	$(CC) $(CFLAGS) -c $(COMMON)/clientfront.c 
 
 clientback.o: $(SRC)/clientback.c ./include/fifo.h $(COMMON)/shared.h $(COMMON)/dbAccess.h
-	$(CC) $(CFLAGS) -c $(SRC)/clientback.c
+	$(CC) $(CFLAGS) -c $(SRC)/clientback.c $(COMMON)/error_handling.c
+
+error_handling.o: $(COMMON)/error_handling.c $(COMMON)/error_handling.h
+	$(CC) $(CFLAGS) -c $(COMMON)/error_handling.c
 
 server: $(SRC)/server.o $(COMMON)/dbAccess.o $(COMMON)/servercommon.o
 	$(CC) $(CFLAGS) -o $(BIN)/server $(SRC)/server.c $(COMMON)/dbAccess.c $(COMMON)/servercommon.c

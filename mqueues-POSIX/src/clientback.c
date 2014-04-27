@@ -8,28 +8,18 @@
 #include <sys/stat.h>
 #include <mqueue.h>
 #include "mutual.h"
+#include "../../common/error_handling.h"
 #include "../../common/clientback.h"
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
  
+void communicate(void);
+
 static ReqMsg reqMsg;
 static RespMsg respMsg;
 static char cltname[100];
 static mqd_t qin, qout;
-void communicate(void);
- 
-void
-fatal(char *s)
-{
-    perror(s);
-    exit(EXIT_FAILURE);
-}
 
-void
-onSigInt(int sig){
-    terminateClient();
-}
- 
 void
 initializeClient(void){
     signal(SIGINT, onSigInt);
@@ -52,6 +42,11 @@ initializeClient(void){
     return;
 }
 
+void
+onSigInt(int sig){
+    terminateClient();
+}
+ 
 void
 terminateClient(void){
     int exit_status = EXIT_SUCCESS;

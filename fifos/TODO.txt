@@ -1,1 +1,0 @@
-Implementar el movie_list de los fifos!
