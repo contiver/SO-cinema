@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include "clientfront.h"
 #include "clientback.h"
@@ -55,8 +56,11 @@ void execute_command(char *command, Client c){
 
 int check_command(char *com){
     int i;
+    for(i = 0; com[i]; i++){
+        com[i] = (char) tolower(com[i]);
+    }
     for(i = 0; i < COMMAND_SIZE; i++){
-        if( strcmp(commands[i],com) == 0 ){
+        if( strcmp(commands[i], com) == 0 ){
             return i;
         }
     }
@@ -69,6 +73,10 @@ void cancel_ticket(Client c){
     printf("Insert movie code: ");
     fflush(stdout);
     scanf("%d", &movieID);    
+    if(movieID > MOVIES_QTY || movieID < 1){
+        printf("Invalid movie code\n");
+        return;
+    }
     printf("\n Insert seat ticket to cancel: ");
     fflush(stdout);
     scanf("%d", &seat);    
@@ -82,20 +90,16 @@ void cancel_ticket(Client c){
 }
 
 void buy_ticket(Client c){
-    int movieID, seat, aux = 1,aux1=1;
+    int movieID, seat, aux = 1;
     char buffer[1024];
 
-    while(aux1){
-        printf("Insert movie code:\n");
-        fgets(buffer,sizeof(buffer),stdin);
-        scanf("%d", &movieID);
+    printf("Insert movie code:\n");
+    fgets(buffer,sizeof(buffer),stdin);
+    scanf("%d", &movieID);
 
-        if(movieID>MOVIES_QTY || movieID<1){
-            printf("Invalid movie code\n");
-        }
-        else{
-            aux1=0;
-        }
+    if(movieID > MOVIES_QTY || movieID < 1){
+        printf("Invalid movie code\n");
+        return;
     }
 
     Movie m;
@@ -112,26 +116,24 @@ void buy_ticket(Client c){
         return;
     }
 
+    char buf[1024];
+    printf("Please choose a seat\n"); 
+    printf("%s %s\n", m.name, m.time);
+    printSeats(m.th.seats);
     while(aux){
-        printf("Please choose a seat\n"); 
-        printf("%s %s\n", m.name, m.time);
-        printSeats(m.th.seats);
+        fgets(buf, sizeof(buf), stdin);
 
-        char buf[1024];
-        fgets(buf,sizeof(buf),stdin);
-
-        if(scanf("%d", &seat)!=1){
+        if(scanf("%d", &seat) != 1){
             aux = INVALID_SEAT;
             printf(RED "Invalid number of seat\n" RESET);
+            continue;
         }
-        else{
-            aux = reserve_seat(c, movieID, seat);
-            if( aux == SEAT_TAKEN ){
-                printf(YELLOW "Sorry, that seat is already taken."
-                       " Please try with another one.\n" RESET);
-            }else if(aux == INVALID_SEAT){
-                printf("Error: Invalid seat number\n");
-            }
+        aux = reserve_seat(c, movieID, seat);
+        if( aux == SEAT_TAKEN ){
+            printf(YELLOW "Sorry, that seat is already taken."
+                    " Please try with another one.\n" RESET);
+        }else if(aux == INVALID_SEAT){
+            printf("Error: Invalid seat number\n");
         }
     }
     printf(GREEN "The purchase has been successful\n" RESET);

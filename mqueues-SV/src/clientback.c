@@ -13,21 +13,16 @@
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
 
+void communicate(void);
 
 static ReqMsg reqMsg;
 static RespMsg respMsg;
-static int msqin =-1,msqout=-1;
-int communicate(void);
- 
-void
-onSigInt(int sig){
-    terminateClient();
-}
+static int msqin = -1, msqout = -1;
  
 void
 initializeClient(void){
     signal(SIGINT, onSigInt);
-    reqMsg.mtype = (long) getpid();
+    reqMsg.mtype = (long)getpid();
 
 	msqin = msgget(SERVER_KEY, IPC_CREAT | 0666); 
 	if(msqin == -1)
@@ -39,6 +34,11 @@ initializeClient(void){
 	
 }
 
+void
+onSigInt(int sig){
+    terminateClient();
+}
+ 
 void
 terminateClient(void){
 	exit(EXIT_SUCCESS);
@@ -74,19 +74,14 @@ reserve_seat(Client c, int movieID, int seat){
     reqMsg.req.client = c;
     reqMsg.req.movieID = movieID;
     reqMsg.req.seat = seat;
-    while(communicate()!=0){
-	}
+    communicate();
     return respMsg.resp.ret;
 }
 
-int
+void
 communicate(void){
-	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1){
-		printf("error send\n");
-        	fatal("msgsnd");
-	}
-	if((msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0)) != sizeof(respMsg)){
-		return -1;
-	}
-	return 0;
+    if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1)
+        fatal("msgsnd");
+    if((msgrcv(msqin, (char *)&respMsg, sizeof(respMsg), getpid(), 0)) == -1)
+        fatal("msgrcv");
 }
