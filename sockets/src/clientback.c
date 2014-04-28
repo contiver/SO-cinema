@@ -25,9 +25,13 @@ void onSigInt(int sig);
 static int cfd = -1;
 static Request req;
 static Response resp;
+static char server_ip[14];
 
 void
 initializeClient(){
+    printf("Insert server IP to connect: ");
+    fflush(stdout);
+    scanf("%s", server_ip);
     signal(SIGINT, onSigInt);
 }
 
@@ -47,7 +51,7 @@ communicate(void){
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT_NUM);
-    inet_pton(AF_INET, HARDCODED_SV_IP, &(addr.sin_addr));
+    inet_pton(AF_INET, server_ip, &(addr.sin_addr));
     if( (cfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         fatal("socket");
     if(connect(cfd, (struct sockaddr *) &addr, 

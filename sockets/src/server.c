@@ -4,15 +4,14 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include "mutual.h"
+#include "rdwrn.h"
 #include "../../common/shared.h"
+#include "../../common/error_handling.h"
 #include "../../common/server.h"
 #include "../../common/dbAccess.h"
 #include "../../common/ipc.h"
 
 #define BACKLOG 50
-#define _BSD_SOURCE
-/* To get definitions of NI_MAXHOST and
-                        NI_MAXSERV from <netdb.h> */
 #include <netdb.h>
 
 void onSigInt(int sig);
@@ -92,12 +91,12 @@ main(void){
             snprintf(addrStr, ADDRSTRLEN, "(?UNKNOWN?)");
         printf("Connection from %s\n", addrStr);
         /* Read client request, send sequence number back */
-        if (read(cfd, &req, sizeof(Request)) != sizeof(Request)) {
+        if (readn(cfd, &req, sizeof(Request)) != sizeof(Request)) {
             close(cfd);
             continue; /* Failed read; skip request */
         }
         resp = execRequest(req);
-        if (write(cfd, &resp, sizeof(Response)) != sizeof(Response))
+        if (writen(cfd, &resp, sizeof(Response)) != sizeof(Response))
             fprintf(stderr, "Error on write");
 
         if(close(cfd) == -1) /* Close connection */
