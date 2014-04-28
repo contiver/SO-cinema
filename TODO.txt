@@ -1,3 +1,1 @@
 Ver el tema de errores con printf que no abortan o hacen continue en shared memories SV (creo)
-en mqueues-SV, clientback.c, dentro del communicate(), los errores solo hacen printf. Esta bien eso o deberia abortar (fatal/exit)?
-communicate() dentro de files-signals: Que es eso de if(s==0) "el proceso existe y le podemos mandar una señal"?

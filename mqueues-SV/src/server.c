@@ -1,4 +1,6 @@
 #include <signal.h>
+#include <unistd.h>
+#include <errno.h>
 #include "../../common/dbAccess.h"
 #include "../../common/server.h"
 #include "../../common/error_handling.h"
@@ -12,22 +14,26 @@ main(void){
     RespMsg respMsg;
     signal(SIGINT, onSigInt);
 
-    msqin = msgget(CLIENTS_KEY, IPC_CREAT | 0666); 
-    if(msqin == -1)
+    if( (msqin = msgget(CLIENTS_KEY, IPC_CREAT | 0666)) == -1 )
         fatal("msgget");
-
-    msqout = msgget(SERVER_KEY, IPC_CREAT | 0666);
-    if(msqout == -1)
+    if ( (msqout = msgget(SERVER_KEY, IPC_CREAT | 0666)) == -1 )
         fatal("msgget");
 
     for(;;){
-        if( msgrcv(msqin, (char *)&reqMsg, sizeof(reqMsg), 0, 0) == -1 )
-            printf("error msgrcv\n");
+        if( msgrcv(msqin, (char *)&reqMsg, sizeof(reqMsg), 0, 0) == -1 ){
+            if(errno == EINTR)
+                continue;
+            perror("msgrcv");
+            break;
+        }
         respMsg.resp = execRequest(reqMsg.req);
         respMsg.mtype = reqMsg.mtype;
         if( msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), 0) == -1 )
             printf("error msgsnd\n");
     }
+    if(msgctl(msqin, IPC_RMID, NULL) == -1)
+        fatal("msgctl");
+    exit(EXIT_SUCCESS);
 }
 
 void

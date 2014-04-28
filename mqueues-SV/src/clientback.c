@@ -1,13 +1,14 @@
+#include <fcntl.h>
+#include <mqueue.h>
+#include "mutual.h"
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <mqueue.h>
-#include "mutual.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include "../../common/error_handling.h"
 #include "../../common/clientback.h"
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
@@ -28,7 +29,7 @@ initializeClient(void){
     signal(SIGINT, onSigInt);
     reqMsg.mtype = (long) getpid();
 
-	msqin= msgget(SERVER_KEY, IPC_CREAT | 0666); 
+	msqin = msgget(SERVER_KEY, IPC_CREAT | 0666); 
 	if(msqin == -1)
 		fatal("msgget");
 
@@ -79,11 +80,8 @@ reserve_seat(Client c, int movieID, int seat){
 
 void
 communicate(void){
-
-	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1){
-		printf("error msgsnd\n");
-	}
-	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0) == -1){
-		printf("error msgrcv\n");
-	}
+	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1)
+        fatal("msgsnd");
+	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0) == -1)
+        fatal("msgrcv");
 }
