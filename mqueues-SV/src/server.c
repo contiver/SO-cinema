@@ -28,12 +28,13 @@ main(void){
         }
         respMsg.resp = execRequest(reqMsg.req);
         respMsg.mtype = reqMsg.mtype;
-        if( msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), 0) == -1 )
-            printf("error msgsnd\n");
+        if( msgsnd(msqout, (char *)&respMsg, sizeof(RespMsg), 0) == -1 ){
+			perror("msgsnd");
+			break;
+		}
     }
-    if(msgctl(msqin, IPC_RMID, NULL) == -1)
-        fatal("msgctl");
-    exit(EXIT_SUCCESS);
+    terminateServer();
+	return 0;
 }
 
 void

@@ -103,8 +103,7 @@ void buy_ticket(Client c){
     m = get_movie(movieID);    
 
     if(m.name[0] == 0){
-        printf("Sorry, an error has ocurred while trying\
-                to access the database\n");
+        printf("Sorry, an error has ocurred while trying to access the database\n");
         return;
     }
 

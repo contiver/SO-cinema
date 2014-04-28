@@ -17,7 +17,7 @@
 static ReqMsg reqMsg;
 static RespMsg respMsg;
 static int msqin =-1,msqout=-1;
-void communicate(void);
+int communicate(void);
  
 void
 onSigInt(int sig){
@@ -74,14 +74,19 @@ reserve_seat(Client c, int movieID, int seat){
     reqMsg.req.client = c;
     reqMsg.req.movieID = movieID;
     reqMsg.req.seat = seat;
-    communicate();
+    while(communicate()!=0){
+	}
     return respMsg.resp.ret;
 }
 
-void
+int
 communicate(void){
-	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1)
-        fatal("msgsnd");
-	if(msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0) == -1)
-        fatal("msgrcv");
+	if(msgsnd(msqout, (char *)&reqMsg, sizeof(ReqMsg), 0) == -1){
+		printf("error send\n");
+        	fatal("msgsnd");
+	}
+	if((msgrcv(msqin, (char *)&respMsg , sizeof(respMsg), getpid(), 0)) != sizeof(respMsg)){
+		return -1;
+	}
+	return 0;
 }
