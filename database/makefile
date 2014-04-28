@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -std=c11
+CFLAGS = -Wall
 TARGET = client
 SRC = ./src
 BIN = ./bin
