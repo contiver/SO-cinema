@@ -38,6 +38,5 @@ main(void){
 
 void
 onSigInt(int sig){
-    remove("/tmp/shm-SV");
     terminateServer();
 }

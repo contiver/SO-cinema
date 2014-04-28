@@ -33,6 +33,8 @@ terminateServer(void){
     int exit_status = EXIT_SUCCESS;
     if( shmdt(mem) != 0 ) exit_status = EXIT_FAILURE;
     if( shmctl(memid, IPC_RMID, NULL) != 0 ) exit_status = EXIT_FAILURE;
+    if( semctl(semid, 0, IPC_RMID) != 0 ) exit_status = EXIT_FAILURE;
+    if(remove("/tmp/shm-SV") == -1) exit_status = EXIT_FAILURE;
     exit(exit_status);
 }
 
