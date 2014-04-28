@@ -10,8 +10,8 @@
 #include "../../common/shared.h"
 #include "../../common/ipc.h"
 
-#define SERVER_KEY ftok("/mqueues-SV-server", 0)
-#define CLIENTS_KEY ftok("/mqueues-SV-clients", 0)
+#define SERVER_KEY ftok("/tmp/mqueues-SV-server", 2)
+#define CLIENTS_KEY ftok("/tmp/mqueues-SV-clients", 1)
 
 void onSigInt(int sig);
 
