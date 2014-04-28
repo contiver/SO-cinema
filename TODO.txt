@@ -1,1 +1,0 @@
-Ver el tema de errores con printf que no abortan o hacen continue en shared memories SV (creo)
