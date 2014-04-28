@@ -83,8 +83,6 @@ read_client_messages(void){
         strcat(clientFile, "/");
         strcat(clientFile, direntp->d_name);
 
-        printf("%s\n", clientFile);
-
         FILE *file = fopen(clientFile,"rb");
         if(file == NULL){
             printf("Error while opening %s file\n",clientFile);
