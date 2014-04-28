@@ -9,7 +9,6 @@ void initmutex(void);
 static Request *mem;
 static int memid;
 static int semid;
-#define SHARED_KEY ftok("/shm-SV", 0)
 
 void *
 getmem(void){

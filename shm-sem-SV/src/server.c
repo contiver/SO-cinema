@@ -8,10 +8,17 @@
 #include "../../common/server.h"
 #include "mutual.h"
 
+
 int
 main(void){
     Request *req;
     Response *resp;
+
+    FILE *file = fopen("/tmp/shm-SV", "wb");
+    if( file == NULL ){
+        fatal("fopen");
+    }
+    fclose(file);
 
     req = (Request *)getmem();
     memset(req, 0, SIZE);
@@ -31,5 +38,6 @@ main(void){
 
 void
 onSigInt(int sig){
+    remove("/tmp/shm-SV");
     terminateServer();
 }

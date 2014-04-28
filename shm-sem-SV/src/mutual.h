@@ -7,12 +7,12 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <sys/mman.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include "../../common/ipc.h"
  
 #define SIZE sizeof(Request)
+#define SHARED_KEY ftok("/tmp/shm-SV", 1)
  
 void fatal(char *s);
 void *getmem(void);
